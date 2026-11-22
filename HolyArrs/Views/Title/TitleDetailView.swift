@@ -49,7 +49,7 @@ struct TitleDetailView: View {
                     }
                     statusPanel(m)
                     if m.kind == "show", let tmdb = m.tmdb {
-                        SeasonsSection(tmdb: tmdb, seasons: seasons(m), library: m.lib?.show?.seasons ?? [], jfEpisodes: m.jfEpisodes) { ep in
+                        SeasonsSection(tmdb: tmdb, seasons: seasons(m), library: m.lib?.show?.seasons ?? [], jfEpisodes: m.jfEpisodes, series: m.jf) { ep in
                             Task { await play(ep, resume: true) }
                         }
                     }
@@ -140,7 +140,9 @@ struct TitleDetailView: View {
                     .buttonStyle(.bordered)
                     .disabled(starting)
                 }
-            } else if m.lib?.hasFiles == true, app.jellyfin == nil {
+            }
+            OfflineDownloadButton(item: m.kind == "movie" ? m.jf : nil)
+            if m.playTarget == nil, m.lib?.hasFiles == true, app.jellyfin == nil {
                 Button {
                     showConnect = true
                 } label: {
@@ -199,6 +201,7 @@ struct TitleDetailView: View {
         do {
             // Re-read the item so the resume point is current (it may have changed in another app).
             let fresh = (try? await j.item(it.Id)) ?? it
+            if await OfflineHooks.playIfDownloaded(fresh, resume: resume) { return }
             try await Player.play(fresh, client: j, from: resume ? fresh.resumeSeconds : nil)
         } catch {
             actionError = "Could not start playback: \(error.localizedDescription)"
@@ -364,6 +367,8 @@ struct SeasonsSection: View {
     let seasons: [TitleMeta.Season]
     let library: [LibraryTitle.ShowInfo.Season]
     var jfEpisodes: [JFItem] = []
+    /// The Jellyfin series (saved with downloaded episodes).
+    var series: JFItem? = nil
     var play: ((JFItem) -> Void)? = nil
     @State private var selected: Int?
     @State private var episodes: [SeasonEpisodes.Episode] = []
@@ -397,12 +402,17 @@ struct SeasonsSection: View {
                 .scrollClipDisabled()
                 #endif
 
+                OfflineSeasonButton(episodes: jfEpisodes.filter { $0.ParentIndexNumber == selected }, series: series)
                 if loading {
                     ProgressView().frame(maxWidth: .infinity)
                 } else if !episodes.isEmpty {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(episodes) { e in
-                            EpisodeRow(e: e, jf: jfEpisodes.first { $0.ParentIndexNumber == selected && $0.IndexNumber == e.number }, play: play)
+                            let jf = jfEpisodes.first { $0.ParentIndexNumber == selected && $0.IndexNumber == e.number }
+                            HStack(spacing: 12) {
+                                EpisodeRow(e: e, jf: jf, play: play)
+                                OfflineEpisodeButton(item: jf, series: series)
+                            }
                         }
                     }
                     .padding(.horizontal, Metrics.gutter)

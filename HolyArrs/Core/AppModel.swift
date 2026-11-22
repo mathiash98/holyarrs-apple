@@ -8,6 +8,8 @@ final class AppModel {
         case starting
         case signedOut
         case signedIn
+        /// HolyArrs could not be reached: the saved login is kept and downloads stay playable (Offline/).
+        case offline
     }
 
     var phase: Phase = .starting
@@ -49,6 +51,7 @@ final class AppModel {
                 }
                 let c = APIClient(baseURL: url, credential: .apiKey(key), readOnly: true)
                 if await adopt(c) { return }
+                if !lastFailureRefused { phase = .offline; return }
             }
         }
         #endif
@@ -58,9 +61,15 @@ final class AppModel {
             return
         }
         let c = APIClient(baseURL: url, credential: saved.credential)
+        // A server that does not answer shows the offline page after a few seconds; the check keeps going.
+        let watchdog = Task {
+            do { try await Task.sleep(for: .seconds(8)) } catch { return }
+            if phase == .starting { phase = .offline }
+        }
+        defer { watchdog.cancel() }
         if await adopt(c) { return }
-        // Keep the saved login when the server is just unreachable; only drop it when it was refused.
-        phase = .signedOut
+        // Keep the saved login when the server is just unreachable; only ask to sign in when it was refused.
+        phase = lastFailureRefused ? .signedOut : .offline
     }
 
     /// Checks the credential with `/auth/me` and switches to the signed-in state.
@@ -74,14 +83,18 @@ final class AppModel {
             self.phase = .signedIn
             Task { await loadAbout() }
             Task { await loadQuality() }
+            OfflineHooks.cameOnline()
             return true
         } catch {
             lastError = error.localizedDescription
+            lastFailureRefused = [401, 403].contains((error as? APIError)?.status ?? 0)
             return false
         }
     }
 
     var lastError: String?
+    /// The last /auth/me failure was a refused login (not an unreachable server).
+    private(set) var lastFailureRefused = false
 
     private func loadAbout() async {
         guard let client else { return }

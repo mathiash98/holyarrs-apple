@@ -34,6 +34,8 @@ struct RootView: View {
                 SignInView()
             case .signedIn:
                 MainTabs()
+            case .offline:
+                OfflineRoot()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
