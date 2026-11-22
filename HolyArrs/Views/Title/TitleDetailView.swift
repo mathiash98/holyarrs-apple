@@ -301,6 +301,11 @@ struct TitleDetailView: View {
                 state = .loaded(model)
             }
             #if DEBUG
+            // Simulator check of the cinema theatre: play the trailer docked in it.
+            if ProcessInfo.processInfo.environment["HOLYARRS_THEATER"] == "1", let tmdb,
+               let t: TrailerStream = try? await c.get("/trailer/\(kind)/\(tmdb.q)"), let s = t.url, let u = URL(string: s) {
+                Player.play(url: u, title: model.name, subtitle: "Trailer", theater: true)
+            }
             if app.debugAutoPlay > 0, let t = model.playTarget {
                 Player.debugAutoClose = app.debugAutoPlay
                 app.debugAutoPlay = 0

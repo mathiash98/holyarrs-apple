@@ -26,10 +26,11 @@ struct TheaterView: View {
 }
 
 enum Theater {
-    /// Screen size and place: 16 m wide, 10 m ahead, centre 5 m up — about the view from a cinema's front rows.
-    static let screenWidth: Float = 16
-    static let screenDistance: Float = 10
-    static let screenHeight: Float = 5
+    /// Screen size and place: 14 m wide, 11 m ahead, centre 4.3 m up — the view from a cinema's front rows,
+    /// low enough that the whole picture fits a seated view.
+    static let screenWidth: Float = 14
+    static let screenDistance: Float = 11
+    static let screenHeight: Float = 4.3
 
     static func makeHall() -> Entity {
         let root = Entity()

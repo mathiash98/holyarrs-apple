@@ -15,13 +15,17 @@ enum Player {
     static var prepare: (() async -> Void)?
     static var cleanup: (() async -> Void)?
 
-    /// Plays a plain URL (trailers).
-    static func play(url: URL, title: String, subtitle: String? = nil) {
+    /// Plays a plain URL (trailers). `theater` opens the visionOS cinema around it.
+    static func play(url: URL, title: String, subtitle: String? = nil, theater: Bool = false) {
         let item = AVPlayerItem(url: url)
         item.externalMetadata = metadata(title: title, subtitle: subtitle)
         let vc = PlayerViewController()
         vc.player = AVPlayer(playerItem: item)
-        present(vc)
+        vc.usesTheater = theater
+        Task {
+            if theater { await prepare?() }
+            present(vc)
+        }
     }
 
     /// Plays a Jellyfin item, starting at `from` seconds.
