@@ -36,6 +36,12 @@ struct SignInView: View {
                 }
                 .padding(.top, 40)
 
+                if let notice = app.signInNotice {
+                    Label(notice, systemImage: "person.crop.circle.badge.exclamationmark")
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: 760, alignment: .leading)
+                }
+
                 Group {
                     switch step {
                     case .server: serverStep
@@ -57,6 +63,10 @@ struct SignInView: View {
         }
         .disabled(busy)
         .overlay { if busy { ProgressView().controlSize(.large) } }
+        .task {
+            // Signed out because the old sign-in ended: skip straight to name and password on the known server.
+            if app.signInNotice != nil, step == .server, !server.isEmpty { await checkServer() }
+        }
     }
 
     // MARK: Steps

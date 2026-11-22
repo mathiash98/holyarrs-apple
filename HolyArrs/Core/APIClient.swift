@@ -41,6 +41,8 @@ final class APIClient {
     var csrf: String = ""
     /// When true, every non-GET request is refused locally. Used for the DEBUG dev-key hook.
     let readOnly: Bool
+    /// Called when the server answers 401 to a request that carried a credential: the saved sign-in has ended.
+    var onUnauthorized: (() -> Void)?
 
     private let session: URLSession
     private let decoder = JSONDecoder()
@@ -141,6 +143,7 @@ final class APIClient {
         guard let http = resp as? HTTPURLResponse else { throw APIError.transport("No HTTP answer.") }
         if !(200 ..< 300).contains(http.statusCode) {
             let msg = (try? decoder.decode(ServerError.self, from: data))?.error ?? ""
+            if http.statusCode == 401, credential != nil { onUnauthorized?() }
             throw APIError.http(status: http.statusCode, message: msg)
         }
         return (data, http)

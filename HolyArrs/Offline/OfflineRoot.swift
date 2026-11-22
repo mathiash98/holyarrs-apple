@@ -53,6 +53,7 @@ private struct Unreachable: View {
                 if trying { ProgressView() } else { Text("Try again") }
             }
             .disabled(trying)
+            Button("Sign in again") { app.phase = .signedOut }
             Button("Sign out") { Task { await app.signOut() } }
         }
     }

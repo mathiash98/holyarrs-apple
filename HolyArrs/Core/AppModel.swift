@@ -69,7 +69,12 @@ final class AppModel {
         defer { watchdog.cancel() }
         if await adopt(c) { return }
         // Keep the saved login when the server is just unreachable; only ask to sign in when it was refused.
-        phase = lastFailureRefused ? .signedOut : .offline
+        if lastFailureRefused {
+            signInNotice = "HolyArrs no longer accepts the saved sign-in. Sign in again to continue."
+            phase = .signedOut
+        } else {
+            phase = .offline
+        }
     }
 
     /// Checks the credential with `/auth/me` and switches to the signed-in state.
@@ -78,7 +83,9 @@ final class AppModel {
         do {
             let me: Me = try await c.get("/auth/me")
             if let csrf = me.csrf, !csrf.isEmpty { c.csrf = csrf }
+            c.onUnauthorized = { [weak self, weak c] in self?.signInEnded(c) }
             self.client = c
+            self.signInNotice = nil
             self.me = me
             self.phase = .signedIn
             Task { await loadAbout() }
@@ -93,6 +100,19 @@ final class AppModel {
     }
 
     var lastError: String?
+    /// Shown on the sign-in page when the server stopped accepting the saved sign-in.
+    var signInNotice: String?
+
+    /// The server answered 401 while signed in (the session expired or was revoked): go to the sign-in page.
+    /// The Jellyfin login for playback and the downloads are kept.
+    private func signInEnded(_ c: APIClient?) {
+        guard phase == .signedIn, let c, client === c, !readOnly else { return }
+        Keychain.clear()
+        signInNotice = "Your HolyArrs sign-in has ended. Sign in again to continue."
+        client = nil
+        me = nil
+        phase = .signedOut
+    }
     /// The last /auth/me failure was a refused login (not an unreachable server).
     private(set) var lastFailureRefused = false
 
