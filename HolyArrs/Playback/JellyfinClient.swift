@@ -80,7 +80,7 @@ final class JellyfinClient {
         session = URLSession(configuration: c)
     }
 
-    private func request(_ method: String, _ path: String, body: Data? = nil) async throws -> Data {
+    func request(_ method: String, _ path: String, body: Data? = nil) async throws -> Data {
         guard let url = URL(string: base.absoluteString + path) else { throw APIError.badURL }
         var req = URLRequest(url: url)
         req.httpMethod = method
