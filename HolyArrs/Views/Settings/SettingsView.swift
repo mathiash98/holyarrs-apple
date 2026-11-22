@@ -6,7 +6,6 @@ struct SettingsView: View {
     @State private var showJellyfin = false
     @AppStorage("autoplayPreviews") private var autoplayPreviews = true
     @AppStorage("autoplayNext") private var autoplayNext = true
-    @AppStorage("theaterMode") private var theaterMode = true
 
     var body: some View {
         Form {
@@ -28,9 +27,6 @@ struct SettingsView: View {
                 Button(app.jellyfin == nil ? "Connect Jellyfin…" : "Connect a different Jellyfin user…") { showJellyfin = true }
             }
             Section("Playback") {
-                #if os(visionOS)
-                Toggle("Cinema theatre when playing", isOn: $theaterMode)
-                #endif
                 Toggle("Autoplay trailer previews", isOn: $autoplayPreviews)
                 Toggle("Autoplay next episode", isOn: $autoplayNext)
             }

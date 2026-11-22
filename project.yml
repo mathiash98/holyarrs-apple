@@ -42,11 +42,8 @@ targets:
         LSApplicationCategoryType: public.app-category.entertainment
         LSApplicationQueriesSchemes: [swiftfin, youtube]
         UILaunchScreen: {}
-        # Immersive spaces (the visionOS cinema theatre) need multiple scenes.
         UIApplicationSceneManifest:
-          UIApplicationSupportsMultipleScenes: true
-          UIApplicationPreferredDefaultSceneSessionRole: UIWindowSceneSessionRoleApplication
-          UISceneConfigurations: {}
+          UIApplicationSupportsMultipleScenes: false
         ITSAppUsesNonExemptEncryption: false
         UIBackgroundModes: [audio]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
