@@ -9,6 +9,7 @@ struct HolyArrsApp: App {
             RootView()
                 .environment(app)
                 .preferredColorScheme(.dark)
+                .tint(Color(red: 0.95, green: 0.23, blue: 0.18))
                 .task { await app.start() }
         }
         #if os(visionOS)

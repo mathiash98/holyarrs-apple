@@ -24,6 +24,7 @@ nonisolated struct JFItem: Codable, Hashable, Identifiable {
     var BackdropImageTags: [String]?
     var ParentBackdropItemId: String?
     var ParentThumbItemId: String?
+    var ParentLogoItemId: String?
     var SeriesPrimaryImageTag: String?
     var Width: Int?
     var Height: Int?
@@ -148,6 +149,13 @@ final class JellyfinClient {
             if let key { best[key] = max(best[key] ?? 0, w) }
         }
         return (best.mapValues(Quality.label(width:)), ids)
+    }
+
+    /// The title's logo (the series' for an episode), only when Jellyfin has one.
+    func logoImage(_ it: JFItem) -> String? {
+        if !it.isEpisode, let t = it.ImageTags?["Logo"] { return base.absoluteString + "/Items/\(it.Id)/Images/Logo?maxWidth=500&tag=\(t)" }
+        if let p = it.ParentLogoItemId { return base.absoluteString + "/Items/\(p)/Images/Logo?maxWidth=500" }
+        return nil
     }
 
     func posterURL(itemID: String, width: Int = 500) -> String {

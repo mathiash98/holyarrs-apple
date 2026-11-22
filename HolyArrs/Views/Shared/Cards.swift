@@ -249,52 +249,95 @@ struct QualityChip: View {
     }
 }
 
-/// A Netflix-style landscape tile: the title's art with its logo on top, and status marks.
-struct LogoCard: View {
+/// A Netflix-style landscape tile: the title's art with its logo on top, status marks and an optional progress bar.
+struct TileCard: View {
     @Environment(AppModel.self) private var app
-    let item: MediaItem
+    let title: String
+    var line: String? = nil
+    let art: String?
+    var logo: String? = nil
+    var badge: String? = nil
+    var progress: Double? = nil
+    var route: Route? = nil
+    var action: (() -> Void)? = nil
+    var kind: String? = nil
+    var tmdb: String? = nil
+    var titleID: Int? = nil
+    var ambient: String? = nil
     var width: CGFloat = Metrics.wideWidth
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            NavigationLink(value: item.route ?? .popular) {
-                ZStack(alignment: .bottomLeading) {
-                    RemoteImage(path: item.card_art ?? item.backdrop ?? item.poster)
-                    LinearGradient(colors: [.clear, .clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
-                    if let logo = item.card_logo {
-                        RemoteImage(path: logo, contentMode: .fit)
-                            .frame(maxWidth: width * 0.55, maxHeight: width * 0.2, alignment: .bottomLeading)
-                            .shadow(color: .black.opacity(0.7), radius: 8)
-                            .padding(14)
-                    } else {
-                        Text(item.displayName).font(.headline.bold()).foregroundStyle(.white).lineLimit(2).padding(14)
-                    }
-                    VStack {
-                        HStack(alignment: .top) {
-                            if let b = item.badge {
-                                Text(b)
-                                    .font(.caption2.weight(.bold))
-                                    .padding(.horizontal, 8).padding(.vertical, 4)
-                                    .background(.black.opacity(0.65), in: Capsule())
-                                    .foregroundStyle(.white)
-                            }
-                            Spacer()
-                            if let q = app.quality(kind: item.kind, tmdb: item.tmdbID, titleID: item.title_id) { QualityChip(label: q) }
-                        }
-                        Spacer()
-                    }
-                    .padding(10)
+            Group {
+                if let action {
+                    Button(action: action) { tile }
+                } else {
+                    NavigationLink(value: route ?? .popular) { tile }
+                        .disabled(route == nil)
                 }
-                .frame(width: width, height: width * 9 / 16)
-                .clipShape(RoundedRectangle(cornerRadius: Metrics.corner, style: .continuous))
             }
             .cardButton()
-            .ambientOnFocus(item.backdrop ?? item.card_art)
-            .disabled(item.route == nil)
-            if let line {
+            .ambientOnFocus(ambient ?? art)
+            if let line, !line.isEmpty {
                 Text(line).font(.caption).foregroundStyle(.secondary).lineLimit(1).frame(width: width, alignment: .leading)
             }
         }
+    }
+
+    private var tile: some View {
+        ZStack(alignment: .bottomLeading) {
+            RemoteImage(path: art)
+            LinearGradient(colors: [.clear, .clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
+            if let logo {
+                RemoteImage(path: logo, contentMode: .fit)
+                    .frame(maxWidth: width * 0.55, maxHeight: width * 0.2, alignment: .bottomLeading)
+                    .shadow(color: .black.opacity(0.7), radius: 8)
+                    .padding(14)
+                    .padding(.bottom, progress != nil ? 8 : 0)
+            } else {
+                Text(title).font(.headline.bold()).foregroundStyle(.white).lineLimit(2).shadow(radius: 6)
+                    .padding(14)
+                    .padding(.bottom, progress != nil ? 8 : 0)
+            }
+            VStack {
+                HStack(alignment: .top) {
+                    if let badge {
+                        Text(badge)
+                            .font(.caption2.weight(.bold))
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(Color.accentColor, in: Capsule())
+                            .foregroundStyle(.white)
+                    }
+                    Spacer()
+                    if let q = app.quality(kind: kind, tmdb: tmdb, titleID: titleID) { QualityChip(label: q) }
+                }
+                Spacer()
+            }
+            .padding(10)
+            if let progress {
+                GeometryReader { g in
+                    Rectangle().fill(.white.opacity(0.25))
+                        .overlay(alignment: .leading) { Rectangle().fill(Color.accentColor).frame(width: g.size.width * progress) }
+                }
+                .frame(height: 4)
+                .frame(maxHeight: .infinity, alignment: .bottom)
+            }
+        }
+        .frame(width: width, height: width * 9 / 16)
+        .clipShape(RoundedRectangle(cornerRadius: Metrics.corner, style: .continuous))
+    }
+}
+
+/// A Netflix-style landscape tile for an Explore item.
+struct LogoCard: View {
+    let item: MediaItem
+    var width: CGFloat = Metrics.wideWidth
+
+    var body: some View {
+        TileCard(title: item.displayName, line: line, art: item.card_art ?? item.backdrop ?? item.poster, logo: item.card_logo,
+                 badge: item.in_library == true || item.title_id != nil ? nil : (item.ask?.state_label ?? item.ask?.state),
+                 route: item.route, kind: item.kind, tmdb: item.tmdbID, titleID: item.title_id,
+                 ambient: item.backdrop ?? item.card_art, width: width)
     }
 
     private var line: String? {

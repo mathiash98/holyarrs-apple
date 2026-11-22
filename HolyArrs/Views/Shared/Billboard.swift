@@ -9,6 +9,10 @@ struct BillboardContent {
     var logo: String?
     var backdrop: String?
     var tagline: String?
+    /// A bold line above the overview, such as "New movie" or "New episodes".
+    var headline: String?
+    /// Age rating shown on the right edge, such as "TV-MA".
+    var rating: String?
     var meta: [String] = []
     var overview: String?
     var route: Route?
@@ -57,6 +61,9 @@ struct Billboard<Actions: View>: View {
                         .foregroundStyle(.white.opacity(0.85))
                         .lineLimit(1)
                 }
+                if let h = content.headline, !h.isEmpty {
+                    Text(h).font(headlineFont).foregroundStyle(.white)
+                }
                 if let t = content.tagline, !t.isEmpty {
                     Text(t).font(metaFont.italic()).foregroundStyle(.white.opacity(0.9))
                 }
@@ -77,11 +84,24 @@ struct Billboard<Actions: View>: View {
                         .buttonBorderShape(.circle)
                     }
                 }
+                .tint(.white)
                 .padding(.top, 6)
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Metrics.gutter)
             .padding(.bottom, 110)
+
+            if let r = content.rating, !r.isEmpty {
+                HStack(spacing: 0) {
+                    Rectangle().fill(.white.opacity(0.8)).frame(width: 3)
+                    Text(r).font(metaFont).padding(.horizontal, 14).padding(.vertical, 6)
+                }
+                .fixedSize()
+                .background(.black.opacity(0.35))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .padding(.bottom, 130)
+            }
         }
         .frame(height: height)
         .frame(maxWidth: .infinity)
@@ -124,6 +144,13 @@ struct Billboard<Actions: View>: View {
         .title3.weight(.semibold)
         #else
         Metrics.isPhone ? .subheadline.weight(.semibold) : .headline
+        #endif
+    }
+    private var headlineFont: Font {
+        #if os(tvOS)
+        .title2.bold()
+        #else
+        Metrics.isPhone ? .headline : .title3.bold()
         #endif
     }
     private var overviewFont: Font {
