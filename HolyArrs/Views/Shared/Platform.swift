@@ -1,7 +1,15 @@
 import SwiftUI
 
-/// Sizes and styles that differ between the headset and the TV.
+/// Sizes and styles that differ between the headset, the TV, the iPad and the iPhone.
 enum Metrics {
+    /// iPhone (compact screens) get smaller cards and margins.
+    static var isPhone: Bool {
+        #if os(iOS)
+        UIDevice.current.userInterfaceIdiom == .phone
+        #else
+        false
+        #endif
+    }
     #if os(tvOS)
     static let posterWidth: CGFloat = 250
     static let wideWidth: CGFloat = 420
@@ -10,12 +18,12 @@ enum Metrics {
     static let cardSpacing: CGFloat = 40
     static let corner: CGFloat = 12
     #else
-    static let posterWidth: CGFloat = 200
-    static let wideWidth: CGFloat = 320
-    static let gutter: CGFloat = 40
-    static let rowSpacing: CGFloat = 32
-    static let cardSpacing: CGFloat = 22
-    static let corner: CGFloat = 18
+    static var posterWidth: CGFloat { isPhone ? 120 : 200 }
+    static var wideWidth: CGFloat { isPhone ? 260 : 320 }
+    static var gutter: CGFloat { isPhone ? 16 : 40 }
+    static var rowSpacing: CGFloat { isPhone ? 22 : 32 }
+    static var cardSpacing: CGFloat { isPhone ? 12 : 22 }
+    static var corner: CGFloat { isPhone ? 12 : 18 }
     #endif
     static var posterHeight: CGFloat { posterWidth * 1.5 }
     static var wideHeight: CGFloat { wideWidth * 9 / 16 }
@@ -28,11 +36,17 @@ extension View {
         #if os(tvOS)
         self.buttonStyle(.card)
         #else
+        #if os(visionOS)
         // A small scale plus the highlight sheen: clear gaze feedback without growing over the title below.
         self.buttonStyle(TapThroughButtonStyle())
             .contentShape(.hoverEffect, RoundedRectangle(cornerRadius: corner, style: .continuous))
             .hoverEffect(.highlight)
             .hoverEffect { effect, isActive, _ in effect.scaleEffect(isActive ? 1.04 : 1) }
+        #else
+        self.buttonStyle(.plain)
+            .contentShape(.hoverEffect, RoundedRectangle(cornerRadius: corner, style: .continuous))
+            .hoverEffect(.lift)
+        #endif
         #endif
     }
 
@@ -41,8 +55,12 @@ extension View {
     func rowButton(corner: CGFloat = 14) -> some View {
         #if os(tvOS)
         self.buttonStyle(.card)
-        #else
+        #elseif os(visionOS)
         self.buttonStyle(TapThroughButtonStyle())
+            .contentShape(.hoverEffect, RoundedRectangle(cornerRadius: corner, style: .continuous))
+            .hoverEffect(.highlight)
+        #else
+        self.buttonStyle(.plain)
             .contentShape(.hoverEffect, RoundedRectangle(cornerRadius: corner, style: .continuous))
             .hoverEffect(.highlight)
         #endif

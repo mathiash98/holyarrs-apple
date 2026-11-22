@@ -202,7 +202,7 @@ struct HeroCarousel: View {
         #if os(tvOS)
         880
         #else
-        720
+        Metrics.isPhone ? 320 : 720
         #endif
     }
 }
@@ -234,7 +234,7 @@ struct TileGrid: View {
         #if os(tvOS)
         340
         #else
-        260
+        Metrics.isPhone ? 160 : 260
         #endif
     }
 

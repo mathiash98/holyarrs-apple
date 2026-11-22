@@ -46,7 +46,7 @@ struct PersonView: View {
     private func header(_ p: PersonAnswer) -> some View {
         HStack(alignment: .top, spacing: 32) {
             RemoteImage(path: p.person?.profile)
-                .frame(width: 220, height: 220)
+                .frame(width: Metrics.isPhone ? 110 : 220, height: Metrics.isPhone ? 110 : 220)
                 .clipShape(Circle())
             VStack(alignment: .leading, spacing: 10) {
                 Text(p.person?.name ?? "").font(.largeTitle.bold())

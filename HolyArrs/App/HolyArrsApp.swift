@@ -61,6 +61,9 @@ struct MainTabs: View {
             Tab("Calendar", systemImage: "calendar", value: AppTab.calendar) { stack { CalendarView() } }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) { stack { SettingsView() } }
         }
+        #if os(iOS)
+        .tabViewStyle(.sidebarAdaptable)
+        #endif
         .onAppear {
             if let t = app.debugStartTab.flatMap(AppTab.init(rawValue:)) { tab = t }
         }

@@ -58,8 +58,13 @@ enum Player {
     }
 
     private static func present(_ vc: PlayerViewController) {
-        #if os(visionOS)
+        #if os(visionOS) || os(iOS)
         vc.modalPresentationStyle = .fullScreen
+        #endif
+        #if os(iOS)
+        // Plays with the ring/silent switch on silent and keeps Picture in Picture working.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+        try? AVAudioSession.sharedInstance().setActive(true)
         #endif
         guard let top = topViewController() else { return }
         top.present(vc, animated: true) {

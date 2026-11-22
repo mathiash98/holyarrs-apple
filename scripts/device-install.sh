@@ -16,8 +16,11 @@ xcodebuild -project HolyArrs.xcodeproj -scheme HolyArrs -configuration Release \
   -destination "id=$UDID" -derivedDataPath build/dev \
   -allowProvisioningUpdates -allowProvisioningDeviceRegistration "${AUTH[@]}" \
   build 2>&1 | grep -E "error:|BUILD (SUCCEEDED|FAILED)" || true
-if xcrun devicectl list devices 2>/dev/null | grep "$UDID" | grep -q "TV"; then
+ROW="$(xcrun devicectl list devices 2>/dev/null | grep "$UDID" || true)"
+if [[ "$ROW" == *TV* ]]; then
   APP=build/dev/Build/Products/Release-appletvos/HolyArrs.app
+elif [[ "$ROW" == *iPhone* || "$ROW" == *iPad* ]]; then
+  APP=build/dev/Build/Products/Release-iphoneos/HolyArrs.app
 else
   APP=build/dev/Build/Products/Release-xros/HolyArrs.app
 fi

@@ -89,7 +89,8 @@ struct AskSheet: View {
     }
 
     private var scopeCards: some View {
-        HStack(spacing: 16) {
+        let layout = Metrics.isPhone ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 16))
+        return layout {
             ForEach(Scope.allCases) { s in
                 Button {
                     scope = s

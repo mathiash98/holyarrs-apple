@@ -8,3 +8,4 @@ xcuserdata/
 *.p8
 Config/Local.xcconfig
 scripts/local.env
+.claude/

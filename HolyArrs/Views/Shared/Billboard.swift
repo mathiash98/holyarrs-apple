@@ -95,42 +95,42 @@ struct Billboard<Actions: View>: View {
         #if os(tvOS)
         640
         #else
-        520
+        Metrics.isPhone ? 260 : 520
         #endif
     }
     private var logoHeight: CGFloat {
         #if os(tvOS)
         220
         #else
-        170
+        Metrics.isPhone ? 90 : 170
         #endif
     }
     private var titleSize: CGFloat {
         #if os(tvOS)
         96
         #else
-        64
+        Metrics.isPhone ? 38 : 64
         #endif
     }
     private var overviewWidth: CGFloat {
         #if os(tvOS)
         1000
         #else
-        720
+        Metrics.isPhone ? .infinity : 720
         #endif
     }
     private var metaFont: Font {
         #if os(tvOS)
         .title3.weight(.semibold)
         #else
-        .headline
+        Metrics.isPhone ? .subheadline.weight(.semibold) : .headline
         #endif
     }
     private var overviewFont: Font {
         #if os(tvOS)
         .title3
         #else
-        .body
+        Metrics.isPhone ? .callout : .body
         #endif
     }
 }
@@ -164,7 +164,7 @@ enum BillboardMetrics {
         #if os(tvOS)
         760
         #else
-        620
+        Metrics.isPhone ? 560 : 620
         #endif
     }
 }

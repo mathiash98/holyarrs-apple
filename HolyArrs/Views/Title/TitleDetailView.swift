@@ -474,7 +474,7 @@ struct EpisodeRow: View {
                     .padding(8)
                 }
             }
-            .frame(width: 220, height: 124)
+            .frame(width: Metrics.isPhone ? 130 : 220, height: Metrics.isPhone ? 73 : 124)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {

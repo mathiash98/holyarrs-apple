@@ -82,4 +82,9 @@ for name, (w, h) in {"Top Shelf Image": (1920, 720), "Top Shelf Image Wide": (23
         render(os.path.join(d, fn), W, H, BG.format(x=0, y=0, w=W, h=H) + mark(W, H, 0.6, DIAMOND + STAR), opaque=True)
         imgs.append({"filename": fn, "idiom": "tv", "scale": f"{sc}x"})
     contents(d, {"images": imgs, "info": INFO})
+# iOS: one flat 1024 x 1024 icon (no alpha); the system rounds the corners.
+d = os.path.join(ROOT, "AppIcon-iOS.appiconset")
+os.makedirs(d, exist_ok=True)
+render(os.path.join(d, "icon-1024.png"), 1024, 1024, BG.format(x=0, y=0, w=1024, h=1024) + mark(1024, 1024, 0.74, DIAMOND + STAR), opaque=True)
+contents(d, {"images": [{"filename": "icon-1024.png", "idiom": "universal", "platform": "ios", "size": "1024x1024"}], "info": INFO})
 print("icons written to", os.path.abspath(ROOT))
