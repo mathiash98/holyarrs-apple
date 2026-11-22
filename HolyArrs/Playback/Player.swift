@@ -11,6 +11,10 @@ enum Player {
     static var debugAutoClose: Double = 0
     #endif
 
+    /// Run before the player appears and after it closes (visionOS: open and close the cinema theatre).
+    static var prepare: (() async -> Void)?
+    static var cleanup: (() async -> Void)?
+
     /// Plays a plain URL (trailers).
     static func play(url: URL, title: String, subtitle: String? = nil) {
         let item = AVPlayerItem(url: url)
@@ -31,6 +35,8 @@ enum Player {
         vc.player = player
         vc.client = client
         vc.attach(item: item, avItem: avItem, info: info)
+        vc.usesTheater = true
+        await prepare?()
         present(vc)
     }
 
@@ -93,6 +99,8 @@ enum Player {
 final class PlayerViewController: AVPlayerViewController {
     var session: JellyfinPlayback?
     var client: JellyfinClient?
+    /// Library playback opens the theatre; trailers do not.
+    var usesTheater = false
     private var current: JFItem?
     private var endObserver: NSObjectProtocol?
 
@@ -135,6 +143,7 @@ final class PlayerViewController: AVPlayerViewController {
             session = nil
             player?.pause()
             player?.replaceCurrentItem(with: nil)
+            if usesTheater { Task { await Player.cleanup?() } }
         }
     }
 }

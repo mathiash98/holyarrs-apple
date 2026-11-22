@@ -33,7 +33,7 @@ struct ExploreView: View {
                         TrailerButton(kind: first.kind, tmdb: first.tmdbID, name: first.displayName)
                         if let r = first.route {
                             NavigationLink(value: r) { Label("More info", systemImage: "info.circle") }
-                                .buttonStyle(.bordered)
+                                .secondaryAction()
                         }
                     }
                     .ignoresSafeArea(edges: .top)

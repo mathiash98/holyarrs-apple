@@ -20,6 +20,10 @@ struct HolyArrsApp: App {
         .windowStyle(.plain)
         .defaultSize(width: 1680, height: 1050)
         #endif
+
+        #if os(visionOS)
+        TheaterSpace()
+        #endif
     }
 }
 
@@ -41,6 +45,9 @@ struct RootView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background { AmbientBackground() }
+        #if os(visionOS)
+        .modifier(TheaterHooks())
+        #endif
         #if os(visionOS)
         .clipShape(RoundedRectangle(cornerRadius: 46, style: .continuous))
         #endif

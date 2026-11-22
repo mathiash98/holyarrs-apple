@@ -137,7 +137,7 @@ struct TitleDetailView: View {
                     } label: {
                         Label("From start", systemImage: "arrow.counterclockwise")
                     }
-                    .buttonStyle(.bordered)
+                    .secondaryAction()
                     .disabled(starting)
                 }
             }
@@ -148,7 +148,7 @@ struct TitleDetailView: View {
                 } label: {
                     Label("Connect Jellyfin to play", systemImage: "play.circle")
                 }
-                .buttonStyle(.bordered)
+                .secondaryAction()
             }
             if let url = m.swiftfin {
                 Button {
@@ -156,7 +156,7 @@ struct TitleDetailView: View {
                 } label: {
                     Label("Swiftfin", systemImage: "play.fill")
                 }
-                .buttonStyle(.bordered)
+                .secondaryAction()
             }
             if canAsk(m) {
                 Button {
@@ -164,7 +164,7 @@ struct TitleDetailView: View {
                 } label: {
                     Label(m.inLibrary ? "Ask for more" : "Ask", systemImage: "plus.circle.fill")
                 }
-                .buttonStyle(.bordered)
+                .secondaryAction()
                 .disabled(app.me?.can("ask") != true && app.me?.isOwner != true)
             }
             if let key = m.meta?.trailerKey {
@@ -173,7 +173,7 @@ struct TitleDetailView: View {
                 } label: {
                     Label("Trailer", systemImage: "play.rectangle")
                 }
-                .buttonStyle(.bordered)
+                .secondaryAction()
             }
         }
     }

@@ -34,6 +34,7 @@ Not affiliated with the HolyArrs project.
 
 ### Platform design
 
+- **visionOS cinema theatre**: library playback opens an immersive cinema hall (dark walls, curtains, rising rows of seats, aisle lights) and docks the player onto a 16 m screen in front of your front-row seat; it closes with the player. Turn it off in Settings › Cinema theatre when playing.
 - **visionOS**: tab ornament, a custom dark window, gaze highlight on every card and row, row arrows and draggable scroll bars for mouse and trackpad, full-window player that docks in environments.
 - **tvOS**: top tab bar, focus-driven card buttons, large type, the standard tvOS player; the backdrop follows focus.
 - **iOS / iPadOS**: tab bar on iPhone, sidebar or top tabs on iPad, compact cards on iPhone, full-screen player with Picture in Picture.

@@ -74,7 +74,7 @@ struct TrailerButton: View {
                 } label: {
                     Label("Trailer", systemImage: "play.rectangle")
                 }
-                .buttonStyle(.bordered)
+                .secondaryAction()
             }
         }
         .task(id: "\(kind ?? "")/\(tmdb ?? "")") {

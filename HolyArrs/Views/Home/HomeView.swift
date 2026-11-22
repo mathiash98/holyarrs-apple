@@ -93,7 +93,7 @@ struct HomeView: View {
                 TrailerButton(kind: f.kind, tmdb: key?.tmdb ?? t?.ids?.tmdb?.value, name: f.name ?? "")
                 if let r = f.route {
                     NavigationLink(value: r) { Label("More info", systemImage: "info.circle") }
-                        .buttonStyle(.bordered)
+                        .secondaryAction()
                 }
             }
         }

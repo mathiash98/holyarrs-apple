@@ -24,8 +24,11 @@ enum OfflinePlayback {
         #if os(visionOS)
         vc.modalPresentationStyle = .fullScreen
         #endif
-        guard let top = topViewController() else { return "Could not open the player." }
-        top.present(vc, animated: true) { vc.player?.play() }
+        guard topViewController() != nil else { return "Could not open the player." }
+        Task {
+            await Player.prepare?()
+            topViewController()?.present(vc, animated: true) { vc.player?.play() }
+        }
         return nil
     }
 
@@ -98,6 +101,7 @@ final class OfflinePlayerViewController: AVPlayerViewController {
         endObserver = nil
         player?.pause()
         player?.replaceCurrentItem(with: nil)
+        Task { await Player.cleanup?() }
         Task { await OfflineStore.shared.syncPending() }
     }
 }

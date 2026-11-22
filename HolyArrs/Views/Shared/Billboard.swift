@@ -84,7 +84,6 @@ struct Billboard<Actions: View>: View {
                         .buttonBorderShape(.circle)
                     }
                 }
-                .tint(.white)
                 .padding(.top, 6)
             }
             .foregroundStyle(.white)
@@ -192,6 +191,31 @@ enum BillboardMetrics {
         760
         #else
         Metrics.isPhone ? 560 : 620
+        #endif
+    }
+}
+
+/// Secondary billboard buttons: white text on translucent grey, readable over any picture.
+struct SecondaryActionStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .padding(.horizontal, 22).padding(.vertical, 14)
+            .background(Color(white: 0.38).opacity(configuration.isPressed ? 0.95 : 0.75), in: Capsule())
+            .foregroundStyle(.white)
+    }
+}
+
+extension View {
+    /// The secondary actions next to Play (Trailer, More info, Ask, Swiftfin, From start).
+    @ViewBuilder
+    func secondaryAction() -> some View {
+        #if os(tvOS)
+        self.buttonStyle(.bordered)
+        #else
+        self.buttonStyle(SecondaryActionStyle())
+            .contentShape(.hoverEffect, Capsule())
+            .hoverEffect(.highlight)
         #endif
     }
 }
