@@ -21,7 +21,7 @@ Not affiliated with the HolyArrs project.
 - **Library**: Continue watching and Next up from Jellyfin (one click plays), then every movie and show in HolyArrs with sort and filter. 4K / FHD / HD / SD marks on everything you have.
 - **Explore**: a full-bleed billboard with a muted trailer preview, your personal rows, browse by genre and category, and New & Popular with top-10 rows.
 - **Search**: your library first, then TMDB movies, shows and people.
-- **Title pages**: trailer billboard, Play / Resume (or the next episode), Swiftfin hand-off, trailer with sound, file quality (resolution, HDR, codec), seasons with per-episode play and progress, cast, collection and similar titles. Ask for a movie or a show (whole show, chosen seasons, or new episodes only).
+- **Title pages**: trailer billboard, live download status (progress, speed, time left) for titles not in the library yet, status pills (quality, HDR, codec, source), Play / Resume (or the next episode), Swiftfin hand-off, trailer with sound, file quality (resolution, HDR, codec), seasons with per-episode play and progress, cast, collection and similar titles. Ask for a movie or a show (whole show, chosen seasons, or new episodes only).
 - **People**: biography, known for, what is in your library, filmography.
 - **Requests**: filter by state, approve, turn down with a note, remove.
 - **Downloads**: live list (refreshes every 3 seconds while visible) with progress, speed and ETA; pause, resume, remove; Decide (needs a decision, confirm match), History and Turned down.

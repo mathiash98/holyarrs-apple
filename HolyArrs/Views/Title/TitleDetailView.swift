@@ -36,6 +36,8 @@ struct TitleDetailView: View {
     @State private var actionError: String?
     @State private var notice: String?
     @State private var showConnect = false
+    /// Active downloads for this title, refreshed while any are running.
+    @State private var downloads: [DownloadRow] = []
     @State private var starting = false
 
     var body: some View {
@@ -86,6 +88,7 @@ struct TitleDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .task { if state.value == nil { await load() } }
+        .task(id: state.value?.titleID) { await watchDownloads() }
     }
 
     private func seasons(_ m: Model) -> [TitleMeta.Season] {
@@ -99,7 +102,7 @@ struct TitleDetailView: View {
     private func header(_ m: Model) -> some View {
         Billboard(content: BillboardContent(kind: m.kind, tmdb: m.tmdb, titleID: m.titleID, name: m.name,
                                             logo: m.meta?.logo ?? m.lib?.logo, backdrop: m.meta?.backdrop ?? m.lib?.backdrop,
-                                            tagline: m.meta?.tagline, meta: [metaLine(m)], pills: pills(m),
+                                            tagline: m.meta?.tagline, meta: [metaLine(m)], pills: pills(m), downloads: downloads,
                                             overview: m.meta?.overview ?? m.lib?.overview),
                   height: BillboardMetrics.height + 60, overviewLines: 6) {
             actions(m)
@@ -239,10 +242,12 @@ struct TitleDetailView: View {
         if let lib = m.lib {
             if lib.kind == "show", let sh = lib.show, let i = sh.in_library, let e = sh.episodes {
                 out.append(i == 0 ? "Not downloaded yet" : i >= e ? "All \(e) episodes" : "\(i) of \(e) episodes")
-            } else {
-                out.append(lib.hasFiles ? "In library" : "Wanted")
+            } else if lib.hasFiles {
+                out.append("In library")
+            } else if downloads.isEmpty {
+                out.append(lib.slots?.first?.state_label ?? "Wanted")
             }
-            if lib.isDownloading { out.append("Downloading") }
+            if lib.isDownloading && downloads.isEmpty { out.append("Downloading") }
         } else if m.inLibrary {
             out.append("In library")
         }
@@ -257,6 +262,22 @@ struct TitleDetailView: View {
             out.append("\(Int(p * 100))% watched")
         }
         return out
+    }
+
+    /// Polls the Downloads list for this title: every 4 seconds while something downloads, once otherwise.
+    private func watchDownloads() async {
+        guard let c = app.client else { return }
+        while !Task.isCancelled {
+            guard let m = state.value, let lib = m.lib, !(lib.kind == "movie" && lib.hasFiles) || lib.isDownloading else {
+                downloads = []
+                return
+            }
+            if let a: DownloadsAnswer = try? await c.get("/downloads/view?limit=200") {
+                downloads = (a.downloads ?? []).filter { $0.title_id == lib.id && !$0.isDone }
+            }
+            if downloads.isEmpty { return }
+            try? await Task.sleep(for: .seconds(4))
+        }
     }
 
     // MARK: Load

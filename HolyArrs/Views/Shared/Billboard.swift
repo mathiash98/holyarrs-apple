@@ -16,6 +16,8 @@ struct BillboardContent {
     var meta: [String] = []
     /// Small black pills next to the quality mark: "In library", "HDR10", "Downloading", "Asked · Approved".
     var pills: [String] = []
+    /// Live downloads for this title (shown with progress under the pills).
+    var downloads: [DownloadRow] = []
     var overview: String?
     var route: Route?
 }
@@ -60,6 +62,9 @@ struct Billboard<Actions: View>: View {
                 FlowLayout(spacing: 8, lineSpacing: 8) {
                     if let q = app.quality(kind: content.kind, tmdb: content.tmdb, titleID: content.titleID) { QualityChip(label: q) }
                     ForEach(content.pills, id: \.self) { Pill(text: $0) }
+                }
+                if !content.downloads.isEmpty {
+                    DownloadStatus(rows: content.downloads)
                 }
                 if !content.meta.isEmpty {
                     Text(content.meta.joined(separator: "  ·  "))
@@ -278,5 +283,43 @@ struct FlowLayout: Layout {
             x += size.width + spacing
             lineHeight = max(lineHeight, size.height)
         }
+    }
+}
+
+/// The live download state of a title: label, progress bar, percentage, speed and time left.
+struct DownloadStatus: View {
+    let rows: [DownloadRow]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(rows.prefix(3)) { r in
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(spacing: 8) {
+                        Image(systemName: r.state == "downloading" ? "arrow.down.circle.fill" : "clock")
+                        Text(line(r)).lineLimit(1)
+                    }
+                    .font(.callout.weight(.semibold))
+                    ProgressView(value: min(max(r.progress ?? 0, 0), 1))
+                        .tint(.accentColor)
+                        .frame(maxWidth: 420)
+                }
+            }
+            if rows.count > 3 {
+                Text("+ \(rows.count - 3) more downloading").font(.caption).foregroundStyle(.white.opacity(0.8))
+            }
+        }
+        .padding(12)
+        .background(.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .foregroundStyle(.white)
+    }
+
+    private func line(_ r: DownloadRow) -> String {
+        var p: [String] = [r.label ?? r.state?.capitalized ?? "Downloading"]
+        if let c = r.covers, !c.isEmpty { p.append(c) }
+        p.append(String(format: "%.0f%%", (r.progress ?? 0) * 100))
+        let sp = Fmt.speed(r.speed)
+        if !sp.isEmpty { p.append(sp) }
+        if let eta = r.eta { p.append("\(Fmt.duration(eta)) left") }
+        return p.joined(separator: " · ")
     }
 }
