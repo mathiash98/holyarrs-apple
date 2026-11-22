@@ -1,0 +1,6 @@
+// Defaults for anyone building HolyArrs. Put your own values in Config/Local.xcconfig (git-ignored):
+//   DEVELOPMENT_TEAM = ABCDE12345
+//   HOLYARRS_BUNDLE_ID = com.yourname.holyarrs
+DEVELOPMENT_TEAM =
+HOLYARRS_BUNDLE_ID = com.example.holyarrs
+#include? "Local.xcconfig"
