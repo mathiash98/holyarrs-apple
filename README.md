@@ -6,13 +6,14 @@ Not affiliated with the HolyArrs project.
 
 | Apple Vision Pro | Apple TV |
 |---|---|
-| ![Explore on visionOS](Docs/screenshots/visionos-explore.jpg) | ![Title on tvOS](Docs/screenshots/tvos-title.jpg) |
-| ![Library on visionOS](Docs/screenshots/visionos-library.jpg) | ![Library on tvOS](Docs/screenshots/tvos-library.jpg) |
-| ![Title on visionOS](Docs/screenshots/visionos-title-billboard.jpg) | ![Search on tvOS](Docs/screenshots/tvos-searchq.jpg) |
+| ![Home on visionOS](Docs/screenshots/visionos-home.jpg) | ![Home on tvOS](Docs/screenshots/tvos-home.jpg) |
+| ![Explore on visionOS](Docs/screenshots/visionos-explore.jpg) | ![Explore on tvOS](Docs/screenshots/tvos-explore.jpg) |
+| ![Title on visionOS](Docs/screenshots/visionos-title-billboard.jpg) | ![Title on tvOS](Docs/screenshots/tvos-title.jpg) |
+| ![Library on visionOS](Docs/screenshots/visionos-library.jpg) | ![Search on tvOS](Docs/screenshots/tvos-searchq.jpg) |
 
 ## Features
 
-- **Home**: what just arrived, requests waiting for your approval, your requests, new seasons, following, coming soon, trending, library totals and messages.
+- **Home**, Netflix style: a featured billboard (a recent arrival with its logo, headline, overview, rating and a muted trailer preview), then rows of landscape logo tiles: Continue Watching and Next Up with progress bars (one click plays), New in your library, Trending Now, New seasons, Following and Coming soon, plus your requests, approvals and library totals.
 - **Library**: Continue watching and Next up from Jellyfin (one click plays), then every movie and show in HolyArrs with sort and filter. 4K / FHD / HD / SD marks on everything you have.
 - **Explore**: a full-bleed billboard with a muted trailer preview, your personal rows, browse by genre and category, and New & Popular with top-10 rows.
 - **Search**: your library first, then TMDB movies, shows and people.
@@ -23,9 +24,16 @@ Not affiliated with the HolyArrs project.
 - **Calendar**: upcoming episodes and movie dates as cards, grouped by day.
 - **Settings**: server, account, Jellyfin connection, autoplay toggles, sign out.
 
+### Design
+
+- Cinema-dark look with HolyArrs red as the accent.
+- Ambient backdrop: a blurred, tinted picture of the current title behind every page (it follows focus on Apple TV).
+- Full-bleed billboards with muted, looping trailer previews (Settings can turn previews off).
+- Netflix-style rows of landscape tiles with title logos, 4K / FHD / HD / SD marks and status badges.
+
 ### Platform design
 
-- **visionOS**: tab ornament, glass panels, gaze highlight on every card and row, full-window player that docks in environments.
+- **visionOS**: tab ornament, a custom dark window, gaze highlight on every card and row, row arrows and draggable scroll bars for mouse and trackpad, full-window player that docks in environments.
 - **tvOS**: top tab bar, focus-driven card buttons, large type, the standard tvOS player; the backdrop follows focus.
 - **iOS / iPadOS**: tab bar on iPhone, sidebar or top tabs on iPad, compact cards on iPhone, full-screen player with Picture in Picture.
 
