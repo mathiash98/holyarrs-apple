@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct HolyArrsApp: App {
+    @UIApplicationDelegateAdaptor(OfflineAppDelegate.self) private var offlineDelegate
     @State private var app = AppModel()
 
     var body: some Scene {
@@ -10,7 +11,10 @@ struct HolyArrsApp: App {
                 .environment(app)
                 .preferredColorScheme(.dark)
                 .tint(Color(red: 0.95, green: 0.23, blue: 0.18))
-                .task { await app.start() }
+                .task {
+                    OfflineHooks.attach(app)
+                    await app.start()
+                }
         }
         #if os(visionOS)
         .windowStyle(.plain)
@@ -31,6 +35,8 @@ struct RootView: View {
                 SignInView()
             case .signedIn:
                 MainTabs()
+            case .offline:
+                OfflineRoot()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -27,6 +27,7 @@ struct LibraryView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 ActionErrorBanner(message: $actionError)
+                OfflineLibraryLink()
                 if let j = app.jellyfinClient {
                     PlayShelf(title: "Continue watching", items: resume, client: j) { await play($0, resume: true) }
                     PlayShelf(title: "Next up", items: nextUp, client: j) { await play($0, resume: true) }
@@ -146,6 +147,7 @@ struct LibraryView: View {
         guard let j = app.jellyfinClient else { return }
         do {
             let fresh = (try? await j.item(it.Id)) ?? it
+            if await OfflineHooks.playIfDownloaded(fresh, resume: resume) { return }
             try await Player.play(fresh, client: j, from: resume ? fresh.resumeSeconds : nil)
         } catch {
             actionError = "Could not start playback: \(error.localizedDescription)"
