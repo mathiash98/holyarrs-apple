@@ -35,7 +35,7 @@ struct Billboard<Actions: View>: View {
             TrailerPreview(kind: content.kind, tmdb: content.tmdb, muted: $muted, playing: $playing)
             // Netflix-style fades: dark to the left for text, and down into the page.
             LinearGradient(colors: [.black.opacity(0.85), .black.opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
-            LinearGradient(colors: [.clear, .clear, .black.opacity(0.9)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [.clear, .clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
 
             VStack(alignment: .leading, spacing: 16) {
                 if let logo = content.logo {
@@ -81,11 +81,14 @@ struct Billboard<Actions: View>: View {
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Metrics.gutter)
-            .padding(.bottom, 40)
+            .padding(.bottom, 110)
         }
         .frame(height: height)
         .frame(maxWidth: .infinity)
         .clipped()
+        .mask(LinearGradient(stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.82), .init(color: .clear, location: 1)], startPoint: .top, endPoint: .bottom))
+        .onAppear { if let b = content.backdrop { app.ambient = b } }
+        .onChange(of: content.backdrop) { _, b in if let b { app.ambient = b } }
     }
 
     private var logoWidth: CGFloat {

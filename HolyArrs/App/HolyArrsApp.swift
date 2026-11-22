@@ -8,10 +8,12 @@ struct HolyArrsApp: App {
         WindowGroup {
             RootView()
                 .environment(app)
+                .preferredColorScheme(.dark)
                 .task { await app.start() }
         }
         #if os(visionOS)
-        .defaultSize(width: 1500, height: 950)
+        .windowStyle(.plain)
+        .defaultSize(width: 1680, height: 1050)
         #endif
     }
 }
@@ -20,14 +22,21 @@ struct RootView: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
-        switch app.phase {
-        case .starting:
-            ProgressView("Connecting to HolyArrs").controlSize(.large)
-        case .signedOut:
-            SignInView()
-        case .signedIn:
-            MainTabs()
+        Group {
+            switch app.phase {
+            case .starting:
+                ProgressView("Connecting to HolyArrs").controlSize(.large)
+            case .signedOut:
+                SignInView()
+            case .signedIn:
+                MainTabs()
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background { AmbientBackground() }
+        #if os(visionOS)
+        .clipShape(RoundedRectangle(cornerRadius: 46, style: .continuous))
+        #endif
     }
 }
 

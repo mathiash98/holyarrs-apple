@@ -12,6 +12,8 @@ struct PosterCard: View {
     var kind: String? = nil
     var tmdb: String? = nil
     var titleID: Int? = nil
+    /// The wide picture used as the page backdrop while this card is focused.
+    var backdrop: String? = nil
 
     private var shownImage: String? { image ?? app.posterFallback(kind: kind, tmdb: tmdb, titleID: titleID) }
 
@@ -41,6 +43,7 @@ struct PosterCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: Metrics.corner, style: .continuous))
             }
             .cardButton()
+            .ambientOnFocus(backdrop)
             .disabled(route == nil)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.callout.weight(.medium)).lineLimit(1)
@@ -89,6 +92,7 @@ struct WideCard: View {
             .clipShape(RoundedRectangle(cornerRadius: Metrics.corner, style: .continuous))
         }
         .cardButton()
+        .ambientOnFocus(image)
         .disabled(route == nil)
     }
 }
@@ -193,11 +197,31 @@ struct MediaShelf: View {
     var subtitle: String? = nil
     let items: [MediaItem]
     var defaultKind: String? = nil
+    /// Posters, or landscape tiles with the title's logo (Netflix rows). Auto picks tiles when the row has the art.
+    enum Style { case auto, posters, tiles }
+    var style: Style = .auto
+
+    private var useTiles: Bool {
+        switch style {
+        case .posters: return false
+        case .tiles: return true
+        case .auto:
+            guard !items.isEmpty else { return false }
+            return Double(items.filter { $0.card_art != nil || $0.backdrop != nil }.count) / Double(items.count) >= 0.6
+                && items.contains { $0.card_logo != nil }
+        }
+    }
 
     var body: some View {
-        Shelf(title: title, subtitle: subtitle, items: items) { item in
-            let it = defaultKind.map { item.withKind($0) } ?? item
-            PosterCard(title: it.displayName, subtitle: subtitleFor(it), image: it.poster ?? it.card_art, badge: it.badge, route: it.route, kind: it.kind, tmdb: it.tmdbID, titleID: it.title_id)
+        if useTiles {
+            Shelf(title: title, subtitle: subtitle, items: items) { item in
+                LogoCard(item: defaultKind.map { item.withKind($0) } ?? item)
+            }
+        } else {
+            Shelf(title: title, subtitle: subtitle, items: items) { item in
+                let it = defaultKind.map { item.withKind($0) } ?? item
+                PosterCard(title: it.displayName, subtitle: subtitleFor(it), image: it.poster ?? it.card_art, badge: it.badge, route: it.route, kind: it.kind, tmdb: it.tmdbID, titleID: it.title_id, backdrop: it.backdrop ?? it.card_art)
+            }
         }
     }
 
@@ -222,5 +246,63 @@ struct QualityChip: View {
             .background(label == "4K" ? AnyShapeStyle(Color(red: 0.85, green: 0.65, blue: 0.2)) : AnyShapeStyle(.black.opacity(0.7)),
                         in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             .foregroundStyle(label == "4K" ? .black : .white)
+    }
+}
+
+/// A Netflix-style landscape tile: the title's art with its logo on top, and status marks.
+struct LogoCard: View {
+    @Environment(AppModel.self) private var app
+    let item: MediaItem
+    var width: CGFloat = Metrics.wideWidth
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            NavigationLink(value: item.route ?? .popular) {
+                ZStack(alignment: .bottomLeading) {
+                    RemoteImage(path: item.card_art ?? item.backdrop ?? item.poster)
+                    LinearGradient(colors: [.clear, .clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
+                    if let logo = item.card_logo {
+                        RemoteImage(path: logo, contentMode: .fit)
+                            .frame(maxWidth: width * 0.55, maxHeight: width * 0.2, alignment: .bottomLeading)
+                            .shadow(color: .black.opacity(0.7), radius: 8)
+                            .padding(14)
+                    } else {
+                        Text(item.displayName).font(.headline.bold()).foregroundStyle(.white).lineLimit(2).padding(14)
+                    }
+                    VStack {
+                        HStack(alignment: .top) {
+                            if let b = item.badge {
+                                Text(b)
+                                    .font(.caption2.weight(.bold))
+                                    .padding(.horizontal, 8).padding(.vertical, 4)
+                                    .background(.black.opacity(0.65), in: Capsule())
+                                    .foregroundStyle(.white)
+                            }
+                            Spacer()
+                            if let q = app.quality(kind: item.kind, tmdb: item.tmdbID, titleID: item.title_id) { QualityChip(label: q) }
+                        }
+                        Spacer()
+                    }
+                    .padding(10)
+                }
+                .frame(width: width, height: width * 9 / 16)
+                .clipShape(RoundedRectangle(cornerRadius: Metrics.corner, style: .continuous))
+            }
+            .cardButton()
+            .ambientOnFocus(item.backdrop ?? item.card_art)
+            .disabled(item.route == nil)
+            if let line {
+                Text(line).font(.caption).foregroundStyle(.secondary).lineLimit(1).frame(width: width, alignment: .leading)
+            }
+        }
+    }
+
+    private var line: String? {
+        if let w = item.what { return w }
+        if let f = item.fresh?.text { return f }
+        var p: [String] = []
+        if let y = item.year { p.append(String(y)) }
+        if let k = item.kind { p.append(k == "show" ? "Series" : "Movie") }
+        return p.isEmpty ? nil : p.joined(separator: " · ")
     }
 }

@@ -19,6 +19,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                     hero(d.home)
                         .ignoresSafeArea(edges: .top)
+                        .padding(.bottom, -90)
                     if let m = d.messages, (m.unread ?? 0) > 0 {
                         NavigationLink(value: Route.messages) {
                             Label("\(m.unread ?? 0) unread message\((m.unread ?? 0) == 1 ? "" : "s")", systemImage: "bell.badge")

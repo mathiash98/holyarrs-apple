@@ -106,6 +106,7 @@ struct TitleDetailView: View {
             actions(m)
         }
         .ignoresSafeArea(edges: .top)
+        .padding(.bottom, -70)
     }
 
     private func metaLine(_ m: Model) -> String {

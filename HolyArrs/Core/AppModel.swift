@@ -28,6 +28,9 @@ final class AppModel {
 
     var serverURL: String { client?.baseURL.absoluteString ?? "" }
 
+    /// The picture behind every page (blurred): the billboard's title, or the focused card on Apple TV.
+    var ambient: String?
+
     func start() async {
         #if DEBUG
         let env = ProcessInfo.processInfo.environment

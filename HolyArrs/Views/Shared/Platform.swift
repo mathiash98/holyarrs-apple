@@ -29,7 +29,7 @@ extension View {
         self.buttonStyle(.card)
         #else
         // A small scale plus the highlight sheen: clear gaze feedback without growing over the title below.
-        self.buttonStyle(.plain)
+        self.buttonStyle(TapThroughButtonStyle())
             .contentShape(.hoverEffect, RoundedRectangle(cornerRadius: corner, style: .continuous))
             .hoverEffect(.highlight)
             .hoverEffect { effect, isActive, _ in effect.scaleEffect(isActive ? 1.04 : 1) }
@@ -42,7 +42,7 @@ extension View {
         #if os(tvOS)
         self.buttonStyle(.card)
         #else
-        self.buttonStyle(.plain)
+        self.buttonStyle(TapThroughButtonStyle())
             .contentShape(.hoverEffect, RoundedRectangle(cornerRadius: corner, style: .continuous))
             .hoverEffect(.highlight)
         #endif
@@ -86,5 +86,17 @@ struct PageHeading: View {
             .font(.largeTitle.bold())
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, padded ? Metrics.gutter : 0)
+    }
+}
+
+/// Triggers on a tap instead of a press. A press claims a mouse or trackpad click at once, so click-and-drag that
+/// starts on a card never scrolls; a tap gesture gives up as soon as the pointer moves, letting the scroll view
+/// take the drag. Gaze-and-pinch and touch still trigger it like any button.
+struct TapThroughButtonStyle: PrimitiveButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .contentShape(Rectangle())
+            .onTapGesture { configuration.trigger() }
+            .accessibilityAddTraits(.isButton)
     }
 }

@@ -37,6 +37,7 @@ struct ExploreView: View {
                         }
                     }
                     .ignoresSafeArea(edges: .top)
+                    .padding(.bottom, -90)
                 }
                 HStack(spacing: 20) {
                     Picker("Type", selection: $kind) {
@@ -313,7 +314,7 @@ struct PosterGrid: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.posterWidth), spacing: Metrics.cardSpacing, alignment: .top)], spacing: Metrics.cardSpacing) {
             ForEach(items) { raw in
                 let it = defaultKind.map { raw.withKind($0) } ?? raw
-                PosterCard(title: it.displayName, subtitle: it.year.map(String.init), image: it.poster ?? it.card_art, badge: it.badge, route: it.route, kind: it.kind, tmdb: it.tmdbID, titleID: it.title_id)
+                PosterCard(title: it.displayName, subtitle: it.year.map(String.init), image: it.poster ?? it.card_art, badge: it.badge, route: it.route, kind: it.kind, tmdb: it.tmdbID, titleID: it.title_id, backdrop: it.backdrop ?? it.card_art)
             }
         }
         .padding(.horizontal, Metrics.gutter)

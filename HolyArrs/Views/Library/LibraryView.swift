@@ -57,7 +57,7 @@ struct LibraryView: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.posterWidth), spacing: Metrics.cardSpacing, alignment: .top)], spacing: Metrics.cardSpacing) {
                         ForEach(shown) { t in
                             PosterCard(title: t.name ?? "", subtitle: subtitle(t), image: t.poster ?? app.posterFallback(kind: t.kind, tmdb: t.ids?.tmdb?.value, titleID: t.id) ?? t.backdrop, route: .libraryTitle(t.id),
-                                       kind: t.kind, tmdb: t.ids?.tmdb?.value, titleID: t.id)
+                                       kind: t.kind, tmdb: t.ids?.tmdb?.value, titleID: t.id, backdrop: t.backdrop)
                         }
                     }
                     .padding(.horizontal, Metrics.gutter)
