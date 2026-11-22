@@ -129,24 +129,62 @@ struct Shelf<Item: Identifiable, Card: View>: View {
     let items: [Item]
     @ViewBuilder let card: (Item) -> Card
 
+    /// The first card in view; the visionOS arrows move it by a few cards (a mouse wheel cannot scroll sideways).
+    @State private var position: Item.ID?
+
     var body: some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 14) {
-                SectionTitle(text: title, subtitle: subtitle)
+                HStack(alignment: .bottom) {
+                    SectionTitle(text: title, subtitle: subtitle)
+                    #if os(visionOS)
+                    if items.count > 3 { arrows.padding(.trailing, Metrics.gutter) }
+                    #endif
+                }
                 ScrollView(.horizontal) {
                     LazyHStack(alignment: .top, spacing: Metrics.cardSpacing) {
                         ForEach(items) { card($0) }
                     }
+                    .scrollTargetLayout()
                     .padding(.horizontal, Metrics.gutter)
                     .padding(.vertical, 20)
                 }
-                .scrollIndicators(.hidden)
+                .scrollPosition(id: $position, anchor: .leading)
                 #if os(tvOS)
+                .scrollIndicators(.hidden)
                 .scrollClipDisabled()
+                #else
+                // A visible bar that can be dragged with a mouse or trackpad.
+                .scrollIndicators(.visible)
                 #endif
             }
         }
     }
+
+    #if os(visionOS)
+    private var arrows: some View {
+        HStack(spacing: 10) {
+            Button { step(-1) } label: { Image(systemName: "chevron.left") }
+                .disabled(index <= 0)
+            Button { step(1) } label: { Image(systemName: "chevron.right") }
+                .disabled(index >= items.count - 1)
+        }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.circle)
+        .controlSize(.small)
+    }
+
+    private var index: Int {
+        guard let p = position else { return 0 }
+        return items.firstIndex { $0.id == p } ?? 0
+    }
+
+    private func step(_ dir: Int) {
+        let n = max(1, items.count)
+        let next = min(max(index + dir * 4, 0), n - 1)
+        withAnimation(.smooth) { position = items[next].id }
+    }
+    #endif
 }
 
 /// A shelf of MediaItem posters.
