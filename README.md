@@ -22,6 +22,7 @@ Not affiliated with the HolyArrs project.
 - **Downloads**: live list (refreshes every 3 seconds while visible) with progress, speed and ETA; pause, resume, remove; Decide (needs a decision, confirm match), History and Turned down.
 - **Calendar**: upcoming episodes and movie dates as cards, grouped by day.
 - **Settings**: server, account, Jellyfin connection, autoplay toggles, sign out.
+- **Offline** (Vision Pro, iPhone, iPad): download movies, episodes or whole seasons from Jellyfin (Original, High 1080p or Medium 720p) with subtitles, in the background. The Offline page lists them by show with storage use, delete and Remove watched, and plays them without a connection. Watch positions made offline go to Jellyfin when the server is back. When HolyArrs cannot be reached at launch the app opens on the Offline page and keeps your login.
 
 ### Platform design
 
@@ -122,6 +123,7 @@ HolyArrs/
   Core/       API client, sign-in state, Keychain, image loader, routes
   Models/     tolerant Codable models for /api/v1
   Playback/   Jellyfin client, player, trailer previews
+  Offline/    downloads, offline catalogue and player, offline launch
   Views/      one shared SwiftUI view per page
 Config/       build settings (Local.xcconfig is yours)
 Docs/         openapi.json from HolyArrs and screenshots
