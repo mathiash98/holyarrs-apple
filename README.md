@@ -82,7 +82,7 @@ open HolyArrs.xcodeproj
 
 Your team id is in Xcode › Settings › Accounts, or at developer.apple.com › Membership. A free Apple ID works, but apps signed with it expire after 7 days; a paid developer account gives a year.
 
-Pick the **HolyArrs** scheme, choose an Apple Vision Pro or Apple TV destination (device or simulator) and press Run.
+Pick the **HolyArrs** scheme, choose an Apple Vision Pro, Apple TV, iPhone or iPad destination (device or simulator) and press Run. The same target builds for all four.
 
 ## Install on Apple Vision Pro
 
@@ -115,8 +115,8 @@ Then open HolyArrs, enter your server address and sign in.
 
 | Script | What it does |
 |---|---|
-| `scripts/device-install.sh <udid>` | Release build for a paired device and install. Uses `ASC_KEY_ID` / `ASC_ISSUER_ID` / `ASC_KEY_PATH` (App Store Connect API key) when set, otherwise your Xcode account. |
-| `scripts/sim-run.sh <visionos\|tvos> [tab] [route] [search]` | Installs the DEBUG simulator build and launches it signed in with an API key. |
+| `scripts/device-install.sh <udid>` | Release build for a paired Vision Pro, Apple TV, iPhone or iPad, and install. Uses `ASC_KEY_ID` / `ASC_ISSUER_ID` / `ASC_KEY_PATH` (App Store Connect API key) when set, otherwise your Xcode account. |
+| `scripts/sim-run.sh <visionos\|tvos> [tab] [route] [search]` (iOS: run from Xcode) | Installs the DEBUG simulator build and launches it signed in with an API key. |
 | `scripts/sim-shots.sh <visionos\|tvos> <dir> name:tab[:route[:search]] ...` | A screenshot per page. |
 | `scripts/make-icons.py` | Regenerates the layered app icons from the HolyArrs mark. |
 

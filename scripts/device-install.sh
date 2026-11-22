@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds Release for a paired Apple Vision Pro or Apple TV and installs it.
+# Builds Release for a paired Apple Vision Pro, Apple TV, iPhone or iPad and installs it.
 # Usage: scripts/device-install.sh <device-udid> [--no-install]
 # Signing uses your team from Config/Local.xcconfig. With an App Store Connect API key in
 # ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH (e.g. in scripts/local.env) it also works without Xcode signed in.
