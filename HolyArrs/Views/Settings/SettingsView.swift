@@ -122,7 +122,7 @@ struct MessagesView: View {
     @State private var actionError: String?
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 PageHeading(text: "Messages", padded: false)
                 ActionErrorBanner(message: $actionError)

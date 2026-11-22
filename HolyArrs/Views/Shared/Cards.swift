@@ -133,8 +133,9 @@ struct Shelf<Item: Identifiable, Card: View>: View {
     let items: [Item]
     @ViewBuilder let card: (Item) -> Card
 
-    /// The first card in view; the visionOS arrows move it by a few cards (a mouse wheel cannot scroll sideways).
-    @State private var position: Item.ID?
+    /// Scroll state for the visionOS arrows (a mouse wheel cannot scroll sideways) and pointer drags.
+    @State private var position = ScrollPosition()
+    @State private var geo = ShelfGeometry()
 
     var body: some View {
         if !items.isEmpty {
@@ -145,15 +146,16 @@ struct Shelf<Item: Identifiable, Card: View>: View {
                     if items.count > 3 { arrows.padding(.trailing, Metrics.gutter) }
                     #endif
                 }
-                ScrollView(.horizontal) {
+                PageScrollView(.horizontal, position: $position) {
                     LazyHStack(alignment: .top, spacing: Metrics.cardSpacing) {
                         ForEach(items) { card($0) }
                     }
-                    .scrollTargetLayout()
                     .padding(.horizontal, Metrics.gutter)
                     .padding(.vertical, 20)
                 }
-                .scrollPosition(id: $position, anchor: .leading)
+                .onScrollGeometryChange(for: ShelfGeometry.self, of: {
+                    ShelfGeometry(offset: $0.contentOffset.x, visible: $0.containerSize.width, content: $0.contentSize.width)
+                }) { _, g in geo = g }
                 #if os(tvOS)
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
@@ -169,26 +171,27 @@ struct Shelf<Item: Identifiable, Card: View>: View {
     private var arrows: some View {
         HStack(spacing: 10) {
             Button { step(-1) } label: { Image(systemName: "chevron.left") }
-                .disabled(index <= 0)
+                .disabled(geo.offset <= 1)
             Button { step(1) } label: { Image(systemName: "chevron.right") }
-                .disabled(index >= items.count - 1)
+                .disabled(geo.offset >= geo.content - geo.visible - 1)
         }
         .buttonStyle(.bordered)
         .buttonBorderShape(.circle)
         .controlSize(.small)
     }
 
-    private var index: Int {
-        guard let p = position else { return 0 }
-        return items.firstIndex { $0.id == p } ?? 0
-    }
-
-    private func step(_ dir: Int) {
-        let n = max(1, items.count)
-        let next = min(max(index + dir * 4, 0), n - 1)
-        withAnimation(.smooth) { position = items[next].id }
+    /// Moves by most of a screen width, like paging a row.
+    private func step(_ dir: CGFloat) {
+        let target = min(max(geo.offset + dir * geo.visible * 0.85, 0), max(0, geo.content - geo.visible))
+        withAnimation(.smooth) { position.scrollTo(x: target) }
     }
     #endif
+}
+
+struct ShelfGeometry: Equatable {
+    var offset: CGFloat = 0
+    var visible: CGFloat = 0
+    var content: CGFloat = 0
 }
 
 /// A shelf of MediaItem posters.

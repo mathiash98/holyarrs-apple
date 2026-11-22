@@ -30,7 +30,7 @@ struct RequestsView: View {
     private var canApprove: Bool { app.me?.can("approve") == true }
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 HStack(spacing: 20) {
                     Picker("Filter", selection: $filter) {

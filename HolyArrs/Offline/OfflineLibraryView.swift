@@ -16,7 +16,7 @@ struct OfflineLibraryView: View {
     private var store: OfflineStore { .shared }
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 VStack(alignment: .leading, spacing: 4) {
                     PageHeading(text: "Offline")

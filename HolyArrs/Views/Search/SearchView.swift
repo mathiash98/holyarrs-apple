@@ -18,7 +18,7 @@ struct SearchView: View {
     @State private var popularPeople: [PersonSummary] = []
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 if query.trimmingCharacters(in: .whitespaces).isEmpty {
                     if !popularPeople.isEmpty {

@@ -14,6 +14,8 @@ struct BillboardContent {
     /// Age rating shown on the right edge, such as "TV-MA".
     var rating: String?
     var meta: [String] = []
+    /// Small black pills next to the quality mark: "In library", "HDR10", "Downloading", "Asked · Approved".
+    var pills: [String] = []
     var overview: String?
     var route: Route?
 }
@@ -56,6 +58,7 @@ struct Billboard<Actions: View>: View {
                 }
                 HStack(spacing: 10) {
                     if let q = app.quality(kind: content.kind, tmdb: content.tmdb, titleID: content.titleID) { QualityChip(label: q) }
+                    ForEach(content.pills, id: \.self) { Pill(text: $0) }
                     Text(content.meta.joined(separator: "  ·  "))
                         .font(metaFont)
                         .foregroundStyle(.white.opacity(0.85))
@@ -217,5 +220,18 @@ extension View {
             .contentShape(.hoverEffect, Capsule())
             .hoverEffect(.highlight)
         #endif
+    }
+}
+
+/// A small black label in the billboard's facts row, matching the quality mark.
+struct Pill: View {
+    let text: String
+    var body: some View {
+        Text(text)
+            .font(.caption2.weight(.heavy))
+            .padding(.horizontal, 7).padding(.vertical, 3)
+            .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .foregroundStyle(.white)
+            .fixedSize()
     }
 }

@@ -9,7 +9,7 @@ struct DecideView: View {
     @State private var busy = false
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 PageHeading(text: "Decide")
                 ActionErrorBanner(message: $actionError)
@@ -101,7 +101,7 @@ private struct MatchRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(m.name ?? "").font(.headline).lineLimit(2)
-            ScrollView(.horizontal) {
+            PageScrollView(.horizontal) {
                 HStack(spacing: 12) {
                     ForEach(m.candidates ?? []) { c in
                         Button {
@@ -130,7 +130,7 @@ struct HistoryView: View {
 
     var body: some View {
         LoadView(state: state, retry: { await load(reset: true) }) { events in
-            ScrollView {
+            PageScrollView {
                 LazyVStack(alignment: .leading, spacing: 10) {
                     PageHeading(text: "History", padded: false)
                     ForEach(grouped(events), id: \.0) { day, evs in
@@ -215,7 +215,7 @@ struct TurnedDownView: View {
     @State private var chosen: ReleaseRow?
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 PageHeading(text: "Turned down")
                 ActionErrorBanner(message: $actionError)

@@ -50,6 +50,7 @@
 		EC86C6CEDFC8A2E1435EDFCD /* OfflinePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77251F7F3FF57A512D27E1EB /* OfflinePlayer.swift */; };
 		EE382033A9367E4E9B64CCEA /* TrailerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1341FEC40A45EFC4901DEF31 /* TrailerPreview.swift */; };
 		F0626F6121246BF2BBAA417E /* HolyArrsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5790D58C5E92E2B0E8B38B9A /* HolyArrsApp.swift */; };
+		FA74D9876D690A17365143D4 /* PageScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E5CBED7EAD41B2B9001078 /* PageScrollView.swift */; };
 		FD0E595FB9B3B7C4444EECB0 /* TitleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C47BFD2011FB5B6DB0794588 /* TitleDetailView.swift */; };
 		FF8B7C4078CFDFA119AB363A /* RequestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D16F6CB678874AAE0A3AA1 /* RequestsView.swift */; };
 /* End PBXBuildFile section */
@@ -100,6 +101,7 @@
 		DEC19E457278EA72AC5D25D0 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		E6F93FF709523CA9B3CB2D38 /* HomePeople.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePeople.swift; sourceTree = "<group>"; };
 		ECBAFE54183407A1BB0F08EF /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		F2E5CBED7EAD41B2B9001078 /* PageScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageScrollView.swift; sourceTree = "<group>"; };
 		FAF88AD5563D126B62BA033A /* HolyArrs.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HolyArrs.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEB330A12A49D07D65EBF610 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
 		FF9B2A00B3BD35D6B2B42F05 /* LibraryPlayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPlayButton.swift; sourceTree = "<group>"; };
@@ -291,6 +293,7 @@
 				7C198E17F04A8DCB61F7DAA3 /* Cards.swift */,
 				FF9B2A00B3BD35D6B2B42F05 /* LibraryPlayButton.swift */,
 				7B391D0006C644355591318F /* Loadable.swift */,
+				F2E5CBED7EAD41B2B9001078 /* PageScrollView.swift */,
 				959E4C65FADD82EA9BC8D8CC /* Platform.swift */,
 			);
 			path = Shared;
@@ -430,6 +433,7 @@
 				6C180CA8D1E591A46AA62395 /* OfflineSession.swift in Sources */,
 				6B9C51A307202C6593C91763 /* OfflineStore.swift in Sources */,
 				4275717D43BA2BA41B4E83B7 /* OfflineStream.swift in Sources */,
+				FA74D9876D690A17365143D4 /* PageScrollView.swift in Sources */,
 				C3AA46062074F6482E7AF4F5 /* PersonView.swift in Sources */,
 				BCF3EE1A3C9476FB7A01F79A /* Platform.swift in Sources */,
 				3ADAB6FA2E1303B457B1DCE3 /* Player.swift in Sources */,

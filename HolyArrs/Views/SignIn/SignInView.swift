@@ -27,7 +27,7 @@ struct SignInView: View {
     @State private var pendingClient: APIClient?
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(spacing: 28) {
                 VStack(spacing: 8) {
                     Image(systemName: "sparkles.tv.fill").font(.system(size: 64)).foregroundStyle(.tint)

@@ -10,7 +10,7 @@ struct PopularView: View {
     @State private var more = false
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 PageHeading(text: "New & Popular")
                 Picker("Type", selection: $type) {

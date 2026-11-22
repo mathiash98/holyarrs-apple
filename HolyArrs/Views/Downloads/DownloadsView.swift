@@ -10,7 +10,7 @@ struct DownloadsView: View {
     @State private var decideCount = 0
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 subNav
                 ActionErrorBanner(message: $actionError)

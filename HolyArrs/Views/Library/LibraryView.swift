@@ -24,7 +24,7 @@ struct LibraryView: View {
     @State private var actionError: String?
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 ActionErrorBanner(message: $actionError)
                 OfflineLibraryLink()

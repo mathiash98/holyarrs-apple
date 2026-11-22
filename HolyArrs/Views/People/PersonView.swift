@@ -11,7 +11,7 @@ struct PersonView: View {
 
     var body: some View {
         LoadView(state: state, retry: load) { p in
-            ScrollView {
+            PageScrollView {
                 VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                     header(p)
                     MediaShelf(title: "Known for", items: p.known_for ?? [], defaultKind: "movie")

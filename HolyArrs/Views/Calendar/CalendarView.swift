@@ -14,7 +14,7 @@ struct CalendarView: View {
     @State private var state: Loadable<CalendarAnswer> = .loading
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 HStack(spacing: 20) {
                     Picker("Range", selection: $range) {
@@ -45,7 +45,7 @@ struct CalendarView: View {
                             ForEach(groups, id: \.day) { g in
                                 VStack(alignment: .leading, spacing: 14) {
                                     SectionTitle(text: dayTitle(g.day), subtitle: "\(g.entries.count) item\(g.entries.count == 1 ? "" : "s")")
-                                    ScrollView(.horizontal) {
+                                    PageScrollView(.horizontal) {
                                         LazyHStack(spacing: Metrics.cardSpacing) {
                                             ForEach(g.entries) { e in CalendarCard(e: e) }
                                         }

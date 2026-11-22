@@ -40,14 +40,13 @@ struct TitleDetailView: View {
 
     var body: some View {
         LoadView(state: state, retry: load) { m in
-            ScrollView {
+            PageScrollView {
                 VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                     header(m)
                     ActionErrorBanner(message: $actionError)
                     if let notice {
                         Label(notice, systemImage: "checkmark.circle.fill").foregroundStyle(.green).padding(.horizontal, Metrics.gutter)
                     }
-                    statusPanel(m)
                     if m.kind == "show", let tmdb = m.tmdb {
                         SeasonsSection(tmdb: tmdb, seasons: seasons(m), library: m.lib?.show?.seasons ?? [], jfEpisodes: m.jfEpisodes, series: m.jf) { ep in
                             Task { await play(ep, resume: true) }
@@ -100,7 +99,7 @@ struct TitleDetailView: View {
     private func header(_ m: Model) -> some View {
         Billboard(content: BillboardContent(kind: m.kind, tmdb: m.tmdb, titleID: m.titleID, name: m.name,
                                             logo: m.meta?.logo ?? m.lib?.logo, backdrop: m.meta?.backdrop ?? m.lib?.backdrop,
-                                            tagline: m.meta?.tagline, meta: [metaLine(m)],
+                                            tagline: m.meta?.tagline, meta: [metaLine(m)], pills: pills(m),
                                             overview: m.meta?.overview ?? m.lib?.overview),
                   height: BillboardMetrics.height + 60, overviewLines: 6) {
             actions(m)
@@ -234,46 +233,28 @@ struct TitleDetailView: View {
 
     // MARK: Status
 
-    @ViewBuilder
-    private func statusPanel(_ m: Model) -> some View {
-        let items = statusItems(m)
-        if !items.isEmpty {
-            HStack(spacing: 16) {
-                ForEach(items, id: \.text) { s in
-                    Label(s.text, systemImage: s.icon).foregroundStyle(s.tint)
-                }
-                Spacer()
-            }
-            .font(.headline)
-            .panel(corner: 22, padding: 18)
-            .padding(.horizontal, Metrics.gutter)
-        }
-    }
-
-    private struct StatusItem { let text: String; let icon: String; let tint: Color }
-
-    private func statusItems(_ m: Model) -> [StatusItem] {
-        var out: [StatusItem] = []
+    /// Status as short pills in the billboard: what is on disk, the file's traits, downloads, asks and progress.
+    private func pills(_ m: Model) -> [String] {
+        var out: [String] = []
         if let lib = m.lib {
-            out.append(StatusItem(text: lib.statusSummary, icon: lib.hasFiles ? "checkmark.circle.fill" : "tray", tint: lib.hasFiles ? .green : .secondary))
-            if lib.isDownloading, !lib.statusSummary.contains("downloading") {
-                out.append(StatusItem(text: "Downloading", icon: "arrow.down.circle.fill", tint: .blue))
+            if lib.kind == "show", let sh = lib.show, let i = sh.in_library, let e = sh.episodes {
+                out.append(i == 0 ? "Not downloaded yet" : i >= e ? "All \(e) episodes" : "\(i) of \(e) episodes")
+            } else {
+                out.append(lib.hasFiles ? "In library" : "Wanted")
             }
+            if lib.isDownloading { out.append("Downloading") }
         } else if m.inLibrary {
-            out.append(StatusItem(text: "In library", icon: "checkmark.circle.fill", tint: .green))
+            out.append("In library")
         }
         if let fq = m.lib?.fileQuality {
-            out.append(StatusItem(text: [fq.label, fq.detail].filter { !$0.isEmpty }.joined(separator: " · "), icon: "sparkles.tv", tint: .yellow))
-        } else if let q = app.quality(kind: m.kind, tmdb: m.tmdb, titleID: m.titleID) {
-            out.append(StatusItem(text: q, icon: "sparkles.tv", tint: .yellow))
+            if app.quality(kind: m.kind, tmdb: m.tmdb, titleID: m.titleID) == nil { out.insert(fq.label, at: 0) }
+            out += fq.detail.split(separator: "·").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        }
+        if let a = m.ask, let label = a.state_label ?? a.state, m.lib?.hasFiles != true {
+            out.append("Asked · \(label)")
         }
         if m.kind == "movie", let p = m.jf?.progress {
-            out.append(StatusItem(text: "\(Int(p * 100))% watched", icon: "play.circle", tint: .secondary))
-        }
-        if let a = m.ask, let label = a.state_label ?? a.state {
-            var t = "Asked: \(label)"
-            if let s = a.seasons, !s.isEmpty { t += " (season\(s.count == 1 ? "" : "s") \(s.map(String.init).joined(separator: ", ")))" }
-            out.append(StatusItem(text: t, icon: "hand.raised.fill", tint: StateBadge.tint(forAskState: a.state)))
+            out.append("\(Int(p * 100))% watched")
         }
         return out
     }
@@ -378,7 +359,7 @@ struct SeasonsSection: View {
         if !seasons.isEmpty {
             VStack(alignment: .leading, spacing: 16) {
                 SectionTitle(text: "Seasons")
-                ScrollView(.horizontal) {
+                PageScrollView(.horizontal) {
                     HStack(spacing: Metrics.cardSpacing / 2) {
                         ForEach(seasons) { s in
                             Button {

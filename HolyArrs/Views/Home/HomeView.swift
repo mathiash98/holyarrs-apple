@@ -21,7 +21,7 @@ struct HomeView: View {
 
     var body: some View {
         LoadView(state: state, retry: load) { d in
-            ScrollView {
+            PageScrollView {
                 VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                     billboard(d)
                         .ignoresSafeArea(edges: .top)

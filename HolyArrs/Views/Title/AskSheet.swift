@@ -126,7 +126,7 @@ struct AskSheet: View {
                 }
                 .font(.callout)
             }
-            ScrollView {
+            PageScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: chipWidth), spacing: 12)], spacing: 12) {
                     ForEach(seasons) { s in
                         let on = picked.contains(s.number)

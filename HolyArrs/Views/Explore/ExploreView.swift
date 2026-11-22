@@ -20,7 +20,7 @@ struct ExploreView: View {
     @State private var sectionTiles: [String: [BrowseTile]] = [:]
 
     var body: some View {
-        ScrollView {
+        PageScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 if let first = head.value?.hero?.first {
                     Billboard(content: BillboardContent(kind: first.kind, tmdb: first.tmdbID, titleID: first.title_id, name: first.displayName,
@@ -164,7 +164,7 @@ struct ExploreView: View {
 struct HeroCarousel: View {
     let items: [MediaItem]
     var body: some View {
-        ScrollView(.horizontal) {
+        PageScrollView(.horizontal) {
             LazyHStack(spacing: Metrics.cardSpacing) {
                 ForEach(items) { it in
                     NavigationLink(value: it.route ?? .popular) {
@@ -255,7 +255,7 @@ struct GenreView: View {
 
     var body: some View {
         LoadView(state: state, retry: load) { g in
-            ScrollView {
+            PageScrollView {
                 VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                     PageHeading(text: g.genre?.name ?? name)
                     if let hero = g.hero, !hero.isEmpty { HeroCarousel(items: hero) }
@@ -287,7 +287,7 @@ struct CategoryView: View {
 
     var body: some View {
         LoadView(state: state, retry: load) { c in
-            ScrollView {
+            PageScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     PageHeading(text: c.name ?? name)
                     PosterGrid(items: c.items ?? [])
