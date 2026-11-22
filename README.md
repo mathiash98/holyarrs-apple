@@ -13,7 +13,7 @@ Not affiliated with the HolyArrs project.
 
 ## Features
 
-- **Home**, Netflix style: a featured billboard (a recent arrival with its logo, headline, overview, rating and a muted trailer preview), then rows of landscape logo tiles: Continue Watching and Next Up with progress bars (one click plays), New in your library, Trending Now, New seasons, Following and Coming soon, plus your requests, approvals and library totals.
+- **Home**: a featured billboard (a recent arrival with its logo, headline, overview, rating and a muted trailer preview), then rows of landscape logo tiles: Continue Watching and Next Up with progress bars (one click plays), New in your library, Trending Now, New seasons, Following and Coming soon, plus your requests, approvals and library totals.
 - **Library**: Continue watching and Next up from Jellyfin (one click plays), then every movie and show in HolyArrs with sort and filter. 4K / FHD / HD / SD marks on everything you have.
 - **Explore**: a full-bleed billboard with a muted trailer preview, your personal rows, browse by genre and category, and New & Popular with top-10 rows.
 - **Search**: your library first, then TMDB movies, shows and people.
@@ -29,7 +29,7 @@ Not affiliated with the HolyArrs project.
 - Cinema-dark look with HolyArrs red as the accent.
 - Ambient backdrop: a blurred, tinted picture of the current title behind every page (it follows focus on Apple TV).
 - Full-bleed billboards with muted, looping trailer previews (Settings can turn previews off).
-- Netflix-style rows of landscape tiles with title logos, 4K / FHD / HD / SD marks and status badges.
+- Rows of landscape tiles with title logos, 4K / FHD / HD / SD marks and status badges.
 
 ### Platform design
 

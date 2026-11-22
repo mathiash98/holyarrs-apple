@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The landing page, Netflix style: a big featured billboard, then rows of landscape tiles.
+/// The landing page: a big featured billboard, then rows of landscape tiles.
 struct HomeView: View {
     @Environment(AppModel.self) private var app
 

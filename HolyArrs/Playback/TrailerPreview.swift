@@ -2,7 +2,7 @@ import AVFoundation
 import SwiftUI
 import UIKit
 
-/// A muted, looping trailer behind a billboard (like Netflix previews). Starts after a short pause so scrolling
+/// A muted, looping trailer preview behind a billboard. Starts after a short pause so scrolling
 /// past does not start streams, stops when it leaves the screen, and only uses trailers HolyArrs already resolved.
 struct TrailerPreview: View {
     @Environment(AppModel.self) private var app

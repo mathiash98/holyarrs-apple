@@ -197,7 +197,7 @@ struct MediaShelf: View {
     var subtitle: String? = nil
     let items: [MediaItem]
     var defaultKind: String? = nil
-    /// Posters, or landscape tiles with the title's logo (Netflix rows). Auto picks tiles when the row has the art.
+    /// Posters, or landscape tiles with the title's logo. Auto picks tiles when the row has the art.
     enum Style { case auto, posters, tiles }
     var style: Style = .auto
 
@@ -249,7 +249,7 @@ struct QualityChip: View {
     }
 }
 
-/// A Netflix-style landscape tile: the title's art with its logo on top, status marks and an optional progress bar.
+/// A landscape tile: the title's art with its logo on top, status marks and an optional progress bar.
 struct TileCard: View {
     @Environment(AppModel.self) private var app
     let title: String
@@ -328,7 +328,7 @@ struct TileCard: View {
     }
 }
 
-/// A Netflix-style landscape tile for an Explore item.
+/// A landscape tile for an Explore item.
 struct LogoCard: View {
     let item: MediaItem
     var width: CGFloat = Metrics.wideWidth

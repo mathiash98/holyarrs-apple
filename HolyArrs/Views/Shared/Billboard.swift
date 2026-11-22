@@ -37,7 +37,7 @@ struct Billboard<Actions: View>: View {
                 .animation(.easeInOut(duration: 24).repeatForever(autoreverses: true), value: zoom)
                 .onAppear { zoom = true }
             TrailerPreview(kind: content.kind, tmdb: content.tmdb, muted: $muted, playing: $playing)
-            // Netflix-style fades: dark to the left for text, and down into the page.
+            // Fades: dark to the left for text, and down into the page.
             LinearGradient(colors: [.black.opacity(0.85), .black.opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
             LinearGradient(colors: [.clear, .clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
 
@@ -162,7 +162,7 @@ struct Billboard<Actions: View>: View {
     }
 }
 
-/// Netflix-style primary button: white with black text.
+/// The primary billboard button: white with black text.
 struct PlayButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
