@@ -85,7 +85,7 @@ struct DownloadsView: View {
             }
             Spacer()
         }
-        .font(.headline)
+        .font(.xHeadline)
         .panel(corner: 20, padding: 16)
         .padding(.horizontal, Metrics.gutter)
 
@@ -167,8 +167,8 @@ struct DownloadRowView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(row.displayTitle).font(.headline).lineLimit(1)
-                    Text(row.name ?? "").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text(row.displayTitle).font(.xHeadline).lineLimit(1)
+                    Text(row.name ?? "").font(.xCaption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer()
                 StateBadge(text: row.label ?? row.state ?? "", tint: tint)
@@ -188,7 +188,7 @@ struct DownloadRowView: View {
                 if let t = row.text, !t.isEmpty { Text(t).lineLimit(1) }
                 Spacer()
             }
-            .font(.caption)
+            .font(.xCaption)
             .foregroundStyle(.secondary)
         }
     }

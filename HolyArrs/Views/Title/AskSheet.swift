@@ -50,11 +50,11 @@ struct AskSheet: View {
                 if scope == .pick { seasonGrid }
             } else {
                 Text("HolyArrs looks for this movie once the request is approved.")
-                    .font(.body).foregroundStyle(.secondary)
+                    .font(.xBody).foregroundStyle(.secondary)
             }
             if let error {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.callout).foregroundStyle(.yellow)
+                    .font(.xCallout).foregroundStyle(.yellow)
             }
             Spacer(minLength: 0)
             footer
@@ -79,10 +79,10 @@ struct AskSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("Ask for").font(.callout).foregroundStyle(.secondary)
-                Text(name).font(.title.bold()).lineLimit(2)
+                Text("Ask for").font(.xCallout).foregroundStyle(.secondary)
+                Text(name).font(.xTitle.bold()).lineLimit(2)
                 Text([year.map(String.init), kind == "show" ? "TV show" : "Movie"].compactMap { $0 }.joined(separator: " · "))
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.xCallout).foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
         }
@@ -96,9 +96,9 @@ struct AskSheet: View {
                     scope = s
                 } label: {
                     VStack(alignment: .leading, spacing: 8) {
-                        Image(systemName: s.icon).font(.title2)
-                        Text(s.title).font(.headline).lineLimit(2).minimumScaleFactor(0.8)
-                        Text(s.detail).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        Image(systemName: s.icon).font(.xTitle2)
+                        Text(s.title).font(.xHeadline).lineLimit(2).minimumScaleFactor(0.8)
+                        Text(s.detail).font(.xCaption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, minHeight: cardHeight, alignment: .topLeading)
                     .padding(16)
@@ -119,12 +119,12 @@ struct AskSheet: View {
     private var seasonGrid: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Seasons").font(.headline)
+                Text("Seasons").font(.xHeadline)
                 Spacer()
                 Button(picked.count == seasons.count ? "Clear" : "Select all") {
                     picked = picked.count == seasons.count ? [] : Set(seasons.map(\.number))
                 }
-                .font(.callout)
+                .font(.xCallout)
             }
             PageScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: chipWidth), spacing: 12)], spacing: 12) {
@@ -137,9 +137,9 @@ struct AskSheet: View {
                                 Image(systemName: on ? "checkmark.circle.fill" : "circle")
                                     .foregroundStyle(on ? Color.accentColor : .secondary)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(s.name ?? "Season \(s.number)").font(.callout.weight(.semibold)).lineLimit(1)
+                                    Text(s.name ?? "Season \(s.number)").font(.xCallout.weight(.semibold)).lineLimit(1)
                                     if let n = s.episode_count {
-                                        Text("\(n) episodes\(s.year.map { " · \($0)" } ?? "")").font(.caption2).foregroundStyle(.secondary)
+                                        Text("\(n) episodes\(s.year.map { " · \($0)" } ?? "")").font(.xCaption2).foregroundStyle(.secondary)
                                     }
                                 }
                                 Spacer(minLength: 0)

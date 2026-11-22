@@ -57,7 +57,7 @@ struct RequestsView: View {
                     if asks.isEmpty {
                         EmptyNote(title: "No requests here", systemImage: "tray")
                     } else {
-                        Text("\(asks.count) of \(a.total ?? asks.count)").font(.caption).foregroundStyle(.secondary).padding(.horizontal, Metrics.gutter)
+                        Text("\(asks.count) of \(a.total ?? asks.count)").font(.xCaption).foregroundStyle(.secondary).padding(.horizontal, Metrics.gutter)
                         LazyVStack(spacing: 14) {
                             ForEach(asks) { ask in
                                 Button { chosen = ask } label: { AskRow(ask: ask) }
@@ -167,11 +167,11 @@ struct AskRow: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 10) {
-                    Text(ask.name ?? "Untitled").font(.headline)
+                    Text(ask.name ?? "Untitled").font(.xHeadline)
                     if let y = ask.year { Text(String(y)).foregroundStyle(.secondary) }
                 }
-                Text(subtitle).font(.callout).foregroundStyle(.secondary).lineLimit(1)
-                if let n = ask.note, !n.isEmpty { Text(n).font(.caption).foregroundStyle(.secondary).lineLimit(2) }
+                Text(subtitle).font(.xCallout).foregroundStyle(.secondary).lineLimit(1)
+                if let n = ask.note, !n.isEmpty { Text(n).font(.xCaption).foregroundStyle(.secondary).lineLimit(2) }
             }
             Spacer()
             StateBadge(text: ask.state_label ?? ask.state ?? "", tint: StateBadge.tint(forAskState: ask.state))

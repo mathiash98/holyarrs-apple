@@ -387,8 +387,8 @@ struct SeasonsSection: View {
                                 selected = s.number
                             } label: {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(s.name ?? "Season \(s.number)").font(.headline)
-                                    Text(seasonLine(s)).font(.caption).foregroundStyle(.secondary)
+                                    Text(s.name ?? "Season \(s.number)").font(.xHeadline)
+                                    Text(seasonLine(s)).font(.xCaption).foregroundStyle(.secondary)
                                 }
                                 .padding(.horizontal, 20).padding(.vertical, 14)
                                 .background(selected == s.number ? Color.accentColor.opacity(0.35) : .clear, in: RoundedRectangle(cornerRadius: 14))
@@ -473,7 +473,7 @@ struct EpisodeRow: View {
                 RemoteImage(path: e.still)
                 if jf != nil {
                     Image(systemName: "play.circle.fill")
-                        .font(.largeTitle)
+                        .font(.xLargeTitle)
                         .foregroundStyle(.white.opacity(0.9))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -490,12 +490,12 @@ struct EpisodeRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
-                    Text("\(e.number). \(e.name ?? "Episode \(e.number)")").font(.headline)
+                    Text("\(e.number). \(e.name ?? "Episode \(e.number)")").font(.xHeadline)
                     if jf?.UserData?.Played == true { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green) }
                 }
                 Text([e.air_day.flatMap { HADate.parse($0) }?.formatted(date: .abbreviated, time: .omitted), Fmt.runtime(e.runtime), jf == nil ? nil : "On Jellyfin"].compactMap { $0 }.joined(separator: " · "))
-                    .font(.caption).foregroundStyle(.secondary)
-                if let o = e.overview { Text(o).font(.callout).lineLimit(3).foregroundStyle(.secondary) }
+                    .font(.xCaption).foregroundStyle(.secondary)
+                if let o = e.overview { Text(o).font(.xCallout).lineLimit(3).foregroundStyle(.secondary) }
             }
             Spacer(minLength: 0)
         }

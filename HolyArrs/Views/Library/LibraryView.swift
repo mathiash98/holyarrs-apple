@@ -33,10 +33,10 @@ struct LibraryView: View {
                     PlayShelf(title: "Next up", items: nextUp, client: j) { await play($0, resume: true) }
                 } else {
                     HStack(spacing: 16) {
-                        Image(systemName: "play.circle").font(.title)
+                        Image(systemName: "play.circle").font(.xTitle)
                         VStack(alignment: .leading) {
-                            Text("Play your library here").font(.headline)
-                            Text("Connect your Jellyfin account to watch, resume and see Next up.").font(.callout).foregroundStyle(.secondary)
+                            Text("Play your library here").font(.xHeadline)
+                            Text("Connect your Jellyfin account to watch, resume and see Next up.").font(.xCallout).foregroundStyle(.secondary)
                         }
                         Spacer()
                         Button("Connect Jellyfin") { showConnect = true }.buttonStyle(.borderedProminent)
@@ -54,7 +54,7 @@ struct LibraryView: View {
                     ErrorView(message: m) { await loadTitles() }.frame(minHeight: 300)
                 case let .loaded(all):
                     let shown = visible(all)
-                    Text("\(shown.count) \(kind.label.lowercased())").font(.caption).foregroundStyle(.secondary).padding(.horizontal, Metrics.gutter)
+                    Text("\(shown.count) \(kind.label.lowercased())").font(.xCaption).foregroundStyle(.secondary).padding(.horizontal, Metrics.gutter)
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.posterWidth), spacing: Metrics.cardSpacing, alignment: .top)], spacing: Metrics.cardSpacing) {
                         ForEach(shown) { t in
                             PosterCard(title: t.name ?? "", subtitle: subtitle(t), image: t.poster ?? app.posterFallback(kind: t.kind, tmdb: t.ids?.tmdb?.value, titleID: t.id) ?? t.backdrop, route: .libraryTitle(t.id),
@@ -172,7 +172,7 @@ struct PlayShelf: View {
                         RemoteImage(path: client.wideImage(it))
                         LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .center, endPoint: .bottom)
                         Image(systemName: "play.fill")
-                            .font(.title)
+                            .font(.xTitle)
                             .foregroundStyle(.white.opacity(0.9))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         if let p = it.progress {
@@ -189,8 +189,8 @@ struct PlayShelf: View {
                 }
                 .cardButton()
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(it.isEpisode ? (it.SeriesName ?? "") : (it.Name ?? "")).font(.callout.weight(.medium)).lineLimit(1)
-                    Text(it.isEpisode ? it.displayTitle : (it.ProductionYear.map(String.init) ?? "")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text(it.isEpisode ? (it.SeriesName ?? "") : (it.Name ?? "")).font(.xCallout.weight(.medium)).lineLimit(1)
+                    Text(it.isEpisode ? it.displayTitle : (it.ProductionYear.map(String.init) ?? "")).font(.xCaption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 .frame(width: Metrics.wideWidth, alignment: .leading)
             }

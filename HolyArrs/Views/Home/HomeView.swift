@@ -51,7 +51,7 @@ struct HomeView: View {
                     if let m = d.messages, (m.unread ?? 0) > 0 {
                         NavigationLink(value: Route.messages) {
                             Label("\(m.unread ?? 0) unread message\((m.unread ?? 0) == 1 ? "" : "s")", systemImage: "bell.badge")
-                                .font(.headline)
+                                .font(.xHeadline)
                                 .padding(.horizontal, 24).padding(.vertical, 14)
                         }
                         .rowButton()
@@ -128,11 +128,11 @@ struct HomeView: View {
                 ForEach(["movie", "show", "artist"], id: \.self) { k in
                     if let c = lib[k], (c.titles ?? 0) > 0 {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(k == "movie" ? "Movies" : k == "show" ? "Shows" : "Music").font(.headline)
+                            Text(k == "movie" ? "Movies" : k == "show" ? "Shows" : "Music").font(.xHeadline)
                             Text("\(c.titles ?? 0)").font(.system(size: 44, weight: .bold, design: .rounded))
-                            Text("\(c.on_disk ?? 0) on disk · \(c.missing ?? 0) missing").font(.caption).foregroundStyle(.secondary)
-                            if (c.downloading ?? 0) > 0 { Text("\(c.downloading ?? 0) downloading").font(.caption).foregroundStyle(.tint) }
-                            Text(Fmt.bytes(c.size)).font(.caption).foregroundStyle(.secondary)
+                            Text("\(c.on_disk ?? 0) on disk · \(c.missing ?? 0) missing").font(.xCaption).foregroundStyle(.secondary)
+                            if (c.downloading ?? 0) > 0 { Text("\(c.downloading ?? 0) downloading").font(.xCaption).foregroundStyle(.tint) }
+                            Text(Fmt.bytes(c.size)).font(.xCaption).foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .panel(corner: 22, padding: 22)

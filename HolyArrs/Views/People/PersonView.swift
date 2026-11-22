@@ -49,10 +49,10 @@ struct PersonView: View {
                 .frame(width: Metrics.isPhone ? 110 : 220, height: Metrics.isPhone ? 110 : 220)
                 .clipShape(Circle())
             VStack(alignment: .leading, spacing: 10) {
-                Text(p.person?.name ?? "").font(.largeTitle.bold())
-                Text(detailLine(p)).font(.headline).foregroundStyle(.secondary)
+                Text(p.person?.name ?? "").font(.xLargeTitle.bold())
+                Text(detailLine(p)).font(.xHeadline).foregroundStyle(.secondary)
                 if let bio = p.person?.biography, !bio.isEmpty {
-                    Text(bio).font(.callout).lineLimit(8).frame(maxWidth: 1000, alignment: .leading)
+                    Text(bio).font(.xCallout).lineLimit(8).frame(maxWidth: 1000, alignment: .leading)
                 }
             }
         }

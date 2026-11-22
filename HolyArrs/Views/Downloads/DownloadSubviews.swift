@@ -79,9 +79,9 @@ private struct DecisionRow: View {
         HStack(alignment: .top, spacing: 18) {
             RemoteImage(path: d.artwork).frame(width: 70, height: 105).clipShape(RoundedRectangle(cornerRadius: 8))
             VStack(alignment: .leading, spacing: 6) {
-                Text([d.title, d.year.map(String.init)].compactMap { $0 }.joined(separator: " ")).font(.headline)
-                if let r = d.reason { Text(r).font(.callout).foregroundStyle(.secondary) }
-                if let rn = d.release_name { Text(rn).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+                Text([d.title, d.year.map(String.init)].compactMap { $0 }.joined(separator: " ")).font(.xHeadline)
+                if let r = d.reason { Text(r).font(.xCallout).foregroundStyle(.secondary) }
+                if let rn = d.release_name { Text(rn).font(.xCaption).foregroundStyle(.secondary).lineLimit(1) }
                 HStack(spacing: 12) {
                     Button("Search again") { decide(d, "search") }
                     Button("Turn down release") { decide(d, "turn_down") }
@@ -100,7 +100,7 @@ private struct MatchRow: View {
     let pick: (DownloadMatch, PickBody) -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(m.name ?? "").font(.headline).lineLimit(2)
+            Text(m.name ?? "").font(.xHeadline).lineLimit(2)
             PageScrollView(.horizontal) {
                 HStack(spacing: 12) {
                     ForEach(m.candidates ?? []) { c in
@@ -134,7 +134,7 @@ struct HistoryView: View {
                 LazyVStack(alignment: .leading, spacing: 10) {
                     PageHeading(text: "History", padded: false)
                     ForEach(grouped(events), id: \.0) { day, evs in
-                        Text(day).font(.headline).foregroundStyle(.secondary).padding(.top, 14)
+                        Text(day).font(.xHeadline).foregroundStyle(.secondary).padding(.top, 14)
                         ForEach(evs) { e in
                             Button {} label: { EventRow(e: e) }.rowButton(corner: 16)
                         }
@@ -187,9 +187,9 @@ private struct EventRow: View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon).frame(width: 30).foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 4) {
-                Text(e.summary ?? e.kind ?? "").font(.callout).frame(maxWidth: .infinity, alignment: .leading)
+                Text(e.summary ?? e.kind ?? "").font(.xCallout).frame(maxWidth: .infinity, alignment: .leading)
                 Text([HADate.parse(e.at)?.formatted(date: .omitted, time: .shortened), e.actorName, e.kind?.replacingOccurrences(of: "_", with: " ")].compactMap { $0 }.joined(separator: " · "))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.xCaption).foregroundStyle(.secondary)
             }
         }
         .padding(12)
@@ -228,10 +228,10 @@ struct TurnedDownView: View {
                             ForEach(rs) { r in
                                 Button { chosen = r } label: {
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(r.title_name ?? "").font(.headline)
-                                        Text(r.name ?? "").font(.callout).lineLimit(1)
+                                        Text(r.title_name ?? "").font(.xHeadline)
+                                        Text(r.name ?? "").font(.xCallout).lineLimit(1)
                                         Text([r.turned_down_for, r.source_name, Fmt.bytes(r.size)].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                                            .font(.caption).foregroundStyle(.secondary)
+                                            .font(.xCaption).foregroundStyle(.secondary)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(14)

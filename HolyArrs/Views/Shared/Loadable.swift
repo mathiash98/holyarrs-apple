@@ -62,7 +62,7 @@ struct StateBadge: View {
     var tint: Color = .secondary
     var body: some View {
         Text(text)
-            .font(.caption.weight(.semibold))
+            .font(.xCaption.weight(.semibold))
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(tint == .secondary ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(tint.opacity(0.85)), in: Capsule())
             .foregroundStyle(tint == .secondary ? Color.primary : .white)
@@ -86,7 +86,7 @@ struct ActionErrorBanner: View {
         if let message {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
-                Text(message).font(.callout).frame(maxWidth: .infinity, alignment: .leading)
+                Text(message).font(.xCallout).frame(maxWidth: .infinity, alignment: .leading)
                 Button("Dismiss") { self.message = nil }
             }
             .panel(corner: 18, padding: 16)

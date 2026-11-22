@@ -175,9 +175,9 @@ struct HeroCarousel: View {
                                 if let logo = it.card_logo {
                                     RemoteImage(path: logo, contentMode: .fit).frame(maxWidth: 340, maxHeight: 100, alignment: .leading)
                                 } else {
-                                    Text(it.displayName).font(.title.bold())
+                                    Text(it.displayName).font(.xTitle.bold())
                                 }
-                                if let o = it.overview { Text(o).font(.callout).lineLimit(2).foregroundStyle(.white.opacity(0.85)) }
+                                if let o = it.overview { Text(o).font(.xCallout).lineLimit(2).foregroundStyle(.white.opacity(0.85)) }
                             }
                             .padding(28)
                             .foregroundStyle(.white)
@@ -219,7 +219,7 @@ struct TileGrid: View {
                     ZStack(alignment: .bottomLeading) {
                         RemoteImage(path: t.backdrop)
                         LinearGradient(colors: [.black.opacity(0.1), .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
-                        Text(t.name ?? t.genre_name ?? "").font(.title3.bold()).foregroundStyle(.white).padding(16)
+                        Text(t.name ?? t.genre_name ?? "").font(.xTitle3.bold()).foregroundStyle(.white).padding(16)
                     }
                     .frame(height: tileWidth * 9 / 16)
                     .clipShape(RoundedRectangle(cornerRadius: Metrics.corner, style: .continuous))

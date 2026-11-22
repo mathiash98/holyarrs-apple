@@ -24,12 +24,12 @@ struct PosterCard: View {
                     RemoteImage(path: shownImage)
                         .overlay {
                             if shownImage == nil {
-                                Text(title).font(.headline).multilineTextAlignment(.center).padding().foregroundStyle(.secondary)
+                                Text(title).font(.xHeadline).multilineTextAlignment(.center).padding().foregroundStyle(.secondary)
                             }
                         }
                     if let badge {
                         Text(badge)
-                            .font(.caption2.weight(.semibold))
+                            .font(.xCaption2.weight(.semibold))
                             .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(.black.opacity(0.65), in: Capsule())
                             .foregroundStyle(.white)
@@ -46,8 +46,8 @@ struct PosterCard: View {
             .ambientOnFocus(backdrop)
             .disabled(route == nil)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.callout.weight(.medium)).lineLimit(1)
-                if let subtitle { Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+                Text(title).font(.xCallout.weight(.medium)).lineLimit(1)
+                if let subtitle { Text(subtitle).font(.xCaption).foregroundStyle(.secondary).lineLimit(1) }
             }
             .frame(width: width, alignment: .leading)
         }
@@ -82,8 +82,8 @@ struct WideCard: View {
                     QualityChip(label: q).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing).padding(10)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.headline).lineLimit(2)
-                    if let subtitle { Text(subtitle).font(.caption).opacity(0.85).lineLimit(1) }
+                    Text(title).font(.xHeadline).lineLimit(2)
+                    if let subtitle { Text(subtitle).font(.xCaption).opacity(0.85).lineLimit(1) }
                 }
                 .foregroundStyle(.white)
                 .padding(14)
@@ -113,14 +113,14 @@ struct PersonCard: View {
         VStack(spacing: titleGap) {
             NavigationLink(value: Route.person(id ?? "")) {
                 RemoteImage(path: image)
-                    .overlay { if image == nil { Image(systemName: "person.fill").font(.largeTitle).foregroundStyle(.secondary) } }
+                    .overlay { if image == nil { Image(systemName: "person.fill").font(.xLargeTitle).foregroundStyle(.secondary) } }
                     .frame(width: size, height: size)
                     .clipShape(Circle())
             }
             .cardButton(corner: size / 2)
             .disabled(id == nil || id?.isEmpty == true)
-            Text(name).font(.caption.weight(.medium)).lineLimit(1)
-            if let detail { Text(detail).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }
+            Text(name).font(.xCaption.weight(.medium)).lineLimit(1)
+            if let detail { Text(detail).font(.xCaption2).foregroundStyle(.secondary).lineLimit(1) }
         }
         .frame(width: size + 20)
     }
@@ -244,7 +244,7 @@ struct QualityChip: View {
     let label: String
     var body: some View {
         Text(label)
-            .font(.caption2.weight(.heavy))
+            .font(.xCaption2.weight(.heavy))
             .padding(.horizontal, 7).padding(.vertical, 3)
             .background(label == "4K" ? AnyShapeStyle(Color(red: 0.85, green: 0.65, blue: 0.2)) : AnyShapeStyle(.black.opacity(0.7)),
                         in: RoundedRectangle(cornerRadius: 5, style: .continuous))
@@ -282,7 +282,7 @@ struct TileCard: View {
             .cardButton()
             .ambientOnFocus(ambient ?? art)
             if let line, !line.isEmpty {
-                Text(line).font(.caption).foregroundStyle(.secondary).lineLimit(1).frame(width: width, alignment: .leading)
+                Text(line).font(.xCaption).foregroundStyle(.secondary).lineLimit(1).frame(width: width, alignment: .leading)
             }
         }
     }
@@ -298,7 +298,7 @@ struct TileCard: View {
                     .padding(14)
                     .padding(.bottom, progress != nil ? 8 : 0)
             } else {
-                Text(title).font(.headline.bold()).foregroundStyle(.white).lineLimit(2).shadow(radius: 6)
+                Text(title).font(.xHeadline.bold()).foregroundStyle(.white).lineLimit(2).shadow(radius: 6)
                     .padding(14)
                     .padding(.bottom, progress != nil ? 8 : 0)
             }
@@ -306,7 +306,7 @@ struct TileCard: View {
                 HStack(alignment: .top) {
                     if let badge {
                         Text(badge)
-                            .font(.caption2.weight(.bold))
+                            .font(.xCaption2.weight(.bold))
                             .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(Color.accentColor, in: Capsule())
                             .foregroundStyle(.white)

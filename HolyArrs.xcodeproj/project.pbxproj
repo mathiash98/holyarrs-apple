@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		08841667598F6DBBDD4E0C0A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8E66823BD85ACA9888BF549 /* Assets.xcassets */; };
 		12F65C9D9799652D8D080C22 /* Titles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65737C5DBF215AE3BB2FA6D3 /* Titles.swift */; };
+		27C9A3B8680DC41D80D80012 /* AppFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A97506D9A341348DB370D0 /* AppFonts.swift */; };
 		2933E2D2752A1A102B0BD141 /* OfflineControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42160F8D20C476B0FB7A3F25 /* OfflineControls.swift */; };
 		2D20FF2D6260524EA417479A /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECBAFE54183407A1BB0F08EF /* Keychain.swift */; };
 		2F5F577F39E2EA14C77A76BC /* Ambient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B488BE27AC7E9E4E90FC5E5 /* Ambient.swift */; };
@@ -60,6 +61,7 @@
 		0B488BE27AC7E9E4E90FC5E5 /* Ambient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ambient.swift; sourceTree = "<group>"; };
 		1341FEC40A45EFC4901DEF31 /* TrailerPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailerPreview.swift; sourceTree = "<group>"; };
 		162B73C51C10653D3FF81114 /* OfflineSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSession.swift; sourceTree = "<group>"; };
+		33A97506D9A341348DB370D0 /* AppFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFonts.swift; sourceTree = "<group>"; };
 		3D5C65B0E32DEB126091FC03 /* Jellyfin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Jellyfin.swift; sourceTree = "<group>"; };
 		42160F8D20C476B0FB7A3F25 /* OfflineControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineControls.swift; sourceTree = "<group>"; };
 		463D50A15A2C25C77D270071 /* OfflineRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRoot.swift; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 			isa = PBXGroup;
 			children = (
 				0B488BE27AC7E9E4E90FC5E5 /* Ambient.swift */,
+				33A97506D9A341348DB370D0 /* AppFonts.swift */,
 				539AF0C42B563F526A3DCCE4 /* Billboard.swift */,
 				7C198E17F04A8DCB61F7DAA3 /* Cards.swift */,
 				FF9B2A00B3BD35D6B2B42F05 /* LibraryPlayButton.swift */,
@@ -402,6 +405,7 @@
 				43DEC728F3643D51E67B1535 /* APIClient.swift in Sources */,
 				647C38C7303F35E9316D89AB /* Activity.swift in Sources */,
 				2F5F577F39E2EA14C77A76BC /* Ambient.swift in Sources */,
+				27C9A3B8680DC41D80D80012 /* AppFonts.swift in Sources */,
 				A2CC343E51ADF7E7DA64B2E1 /* AppModel.swift in Sources */,
 				A59A9A048829194CC7B2761E /* AskSheet.swift in Sources */,
 				D960A96C8B32D529AC4D4EB0 /* Billboard.swift in Sources */,

@@ -130,42 +130,42 @@ struct Billboard<Actions: View>: View {
     }
     private var logoHeight: CGFloat {
         #if os(tvOS)
-        220
+        150
         #else
         Metrics.isPhone ? 90 : 170
         #endif
     }
     private var titleSize: CGFloat {
         #if os(tvOS)
-        96
+        56
         #else
         Metrics.isPhone ? 38 : 64
         #endif
     }
     private var overviewWidth: CGFloat {
         #if os(tvOS)
-        1000
+        760
         #else
         Metrics.isPhone ? .infinity : 720
         #endif
     }
     private var metaFont: Font {
         #if os(tvOS)
-        .title3.weight(.semibold)
+        .xHeadline
         #else
         Metrics.isPhone ? .subheadline.weight(.semibold) : .headline
         #endif
     }
     private var headlineFont: Font {
         #if os(tvOS)
-        .title2.bold()
+        .xTitle3.bold()
         #else
         Metrics.isPhone ? .headline : .title3.bold()
         #endif
     }
     private var overviewFont: Font {
         #if os(tvOS)
-        .title3
+        .xBody
         #else
         Metrics.isPhone ? .callout : .body
         #endif
@@ -176,7 +176,7 @@ struct Billboard<Actions: View>: View {
 struct PlayButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.headline)
+            .font(.xHeadline)
             .lineLimit(1)
             .fixedSize()
             .padding(.horizontal, 26).padding(.vertical, 14)
@@ -212,7 +212,7 @@ enum BillboardMetrics {
 struct SecondaryActionStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.headline)
+            .font(.xHeadline)
             .lineLimit(1)
             .fixedSize()
             .padding(.horizontal, 22).padding(.vertical, 14)
@@ -240,7 +240,7 @@ struct Pill: View {
     let text: String
     var body: some View {
         Text(text)
-            .font(.caption2.weight(.heavy))
+            .font(.xCaption2.weight(.heavy))
             .padding(.horizontal, 7).padding(.vertical, 3)
             .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             .foregroundStyle(.white)
@@ -298,14 +298,14 @@ struct DownloadStatus: View {
                         Image(systemName: r.state == "downloading" ? "arrow.down.circle.fill" : "clock")
                         Text(line(r)).lineLimit(1)
                     }
-                    .font(.callout.weight(.semibold))
+                    .font(.xCallout.weight(.semibold))
                     ProgressView(value: min(max(r.progress ?? 0, 0), 1))
                         .tint(.accentColor)
                         .frame(maxWidth: 420)
                 }
             }
             if rows.count > 3 {
-                Text("+ \(rows.count - 3) more downloading").font(.caption).foregroundStyle(.white.opacity(0.8))
+                Text("+ \(rows.count - 3) more downloading").font(.xCaption).foregroundStyle(.white.opacity(0.8))
             }
         }
         .padding(12)

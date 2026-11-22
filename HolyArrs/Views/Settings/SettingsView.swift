@@ -133,9 +133,9 @@ struct MessagesView: View {
                                     HStack(alignment: .top, spacing: 16) {
                                         Circle().fill(msg.read_at == nil ? Color.accentColor : .clear).frame(width: 12, height: 12).padding(.top, 6)
                                         VStack(alignment: .leading, spacing: 6) {
-                                            Text(msg.text ?? "").font(.callout).frame(maxWidth: .infinity, alignment: .leading)
+                                            Text(msg.text ?? "").font(.xCallout).frame(maxWidth: .infinity, alignment: .leading)
                                             Text([HADate.parse(msg.created_at)?.relative, msg.kind?.replacingOccurrences(of: "_", with: " ")].compactMap { $0 }.joined(separator: " · "))
-                                                .font(.caption).foregroundStyle(.secondary)
+                                                .font(.xCaption).foregroundStyle(.secondary)
                                         }
                                     }
                                     .padding(16)

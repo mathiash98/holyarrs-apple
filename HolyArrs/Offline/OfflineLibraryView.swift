@@ -21,7 +21,7 @@ struct OfflineLibraryView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     PageHeading(text: "Offline")
                     Text("Downloaded to this \(deviceName). Plays without a connection.")
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.xCallout).foregroundStyle(.secondary)
                         .padding(.horizontal, Metrics.gutter)
                 }
                 if offline { OfflineBanner() }
@@ -89,10 +89,10 @@ struct OfflineLibraryView: View {
 
     private var storageText: some View {
         HStack(spacing: 14) {
-            Image(systemName: "internaldrive").font(.title2)
+            Image(systemName: "internaldrive").font(.xTitle2)
             VStack(alignment: .leading, spacing: 2) {
-                Text(store.usedBytes > 0 ? "\(Fmt.bytes(store.usedBytes)) used by downloads" : "No space used yet").font(.headline)
-                if let free = store.freeSpace { Text("\(Fmt.bytes(free)) free on this \(deviceName)").font(.callout).foregroundStyle(.secondary) }
+                Text(store.usedBytes > 0 ? "\(Fmt.bytes(store.usedBytes)) used by downloads" : "No space used yet").font(.xHeadline)
+                if let free = store.freeSpace { Text("\(Fmt.bytes(free)) free on this \(deviceName)").font(.xCallout).foregroundStyle(.secondary) }
             }
         }
     }
@@ -154,11 +154,11 @@ struct OfflineBanner: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            Image(systemName: "wifi.slash").font(.title2).foregroundStyle(.orange)
+            Image(systemName: "wifi.slash").font(.xTitle2).foregroundStyle(.orange)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Can't reach HolyArrs").font(.headline)
+                Text("Can't reach HolyArrs").font(.xHeadline)
                 Text("Your downloads still play. Watch progress is sent to Jellyfin when you're back online.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.xCallout).foregroundStyle(.secondary)
             }
             Spacer(minLength: 10)
             Button {
@@ -216,9 +216,9 @@ struct OfflineMovieCard: View {
             .cardButton()
             .contextMenu { OfflineItemMenu(rec: rec, play: play) }
             VStack(alignment: .leading, spacing: 2) {
-                Text(rec.name).font(.callout.weight(.medium)).lineLimit(1)
+                Text(rec.name).font(.xCallout.weight(.medium)).lineLimit(1)
                 Text([rec.year.map(String.init), rec.bytes.map(Fmt.bytes), rec.resumeSeconds.map { "\(Fmt.clock($0)) in" }].compactMap { $0 }.joined(separator: " · "))
-                    .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    .font(.xCaption).foregroundStyle(.secondary).lineLimit(1)
             }
             .frame(width: Metrics.posterWidth, alignment: .leading)
         }
@@ -241,9 +241,9 @@ struct OfflineShowSection: View {
                     .frame(width: 70, height: 105)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(show.name).font(.title2.bold())
+                    Text(show.name).font(.xTitle2.bold())
                     let bytes = episodes.reduce(Int64(0)) { $0 + ($1.bytes ?? 0) }
-                    Text("\(episodes.count) episode\(episodes.count == 1 ? "" : "s") · \(Fmt.bytes(bytes))").font(.callout).foregroundStyle(.secondary)
+                    Text("\(episodes.count) episode\(episodes.count == 1 ? "" : "s") · \(Fmt.bytes(bytes))").font(.xCallout).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 10)
                 if let next = episodes.first(where: { !$0.played }) ?? episodes.first {
@@ -268,7 +268,7 @@ struct OfflineShowSection: View {
             ForEach(seasons, id: \.key) { season, list in
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Text(season == 0 ? "Specials" : "Season \(season)").font(.headline)
+                        Text(season == 0 ? "Specials" : "Season \(season)").font(.xHeadline)
                         Spacer()
                         Button(role: .destructive) {
                             store.removeSeason(series: show.id, season: list.first?.season)
@@ -316,7 +316,7 @@ struct OfflineEpisodeRow: View {
             ZStack(alignment: .bottomLeading) {
                 OfflineImage(file: rec.thumb, placeholder: nil)
                 Image(systemName: "play.circle.fill")
-                    .font(.title)
+                    .font(.xTitle)
                     .foregroundStyle(.white.opacity(0.9))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 if let w = rec.watched { WatchBar(value: w).padding(6) }
@@ -325,13 +325,13 @@ struct OfflineEpisodeRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
-                    Text("\(rec.episode ?? 0). \(rec.name)").font(.headline).lineLimit(1)
+                    Text("\(rec.episode ?? 0). \(rec.name)").font(.xHeadline).lineLimit(1)
                     if rec.played { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green) }
                 }
                 Text([rec.runtimeSeconds.map { Fmt.duration($0) }, rec.bytes.map(Fmt.bytes), rec.resumeSeconds.map { "\(Fmt.clock($0)) in" }]
                     .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
-                    .font(.caption).foregroundStyle(.secondary)
-                if let o = rec.overview { Text(o).font(.callout).foregroundStyle(.secondary).lineLimit(2) }
+                    .font(.xCaption).foregroundStyle(.secondary)
+                if let o = rec.overview { Text(o).font(.xCallout).foregroundStyle(.secondary).lineLimit(2) }
             }
             Spacer(minLength: 0)
         }
@@ -365,8 +365,8 @@ struct OfflineActiveRow: View {
                 .frame(width: 120, height: 68)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             VStack(alignment: .leading, spacing: 6) {
-                Text(rec.isEpisode ? "\(rec.seriesName ?? "") · \(rec.title)" : rec.name).font(.headline).lineLimit(1)
-                Text(status).font(.caption).foregroundStyle(rec.state == .failed ? .yellow : .secondary).lineLimit(2)
+                Text(rec.isEpisode ? "\(rec.seriesName ?? "") · \(rec.title)" : rec.name).font(.xHeadline).lineLimit(1)
+                Text(status).font(.xCaption).foregroundStyle(rec.state == .failed ? .yellow : .secondary).lineLimit(2)
                 if rec.state != .failed { ProgressView(value: rec.progress).tint(rec.state == .paused ? Color.secondary : Color.accentColor) }
             }
             Spacer(minLength: 10)
@@ -417,7 +417,7 @@ struct OfflineImage: View {
                     Rectangle().fill(.quaternary)
                         .overlay {
                             if let placeholder {
-                                Text(placeholder).font(.headline).multilineTextAlignment(.center).padding().foregroundStyle(.secondary)
+                                Text(placeholder).font(.xHeadline).multilineTextAlignment(.center).padding().foregroundStyle(.secondary)
                             }
                         }
                 }
@@ -454,7 +454,7 @@ private struct WatchBar: View {
 private struct WatchedMark: View {
     var body: some View {
         Image(systemName: "checkmark.circle.fill")
-            .font(.title3)
+            .font(.xTitle3)
             .foregroundStyle(.white, .green)
     }
 }

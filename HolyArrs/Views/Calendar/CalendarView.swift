@@ -120,12 +120,12 @@ struct CalendarCard: View {
                     LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(e.name ?? "").font(.headline).lineLimit(1)
-                            Text(line).font(.caption).lineLimit(1).opacity(0.9)
+                            Text(e.name ?? "").font(.xHeadline).lineLimit(1)
+                            Text(line).font(.xCaption).lineLimit(1).opacity(0.9)
                         }
                         Spacer()
                         Text(kindLabel)
-                            .font(.caption2.weight(.bold))
+                            .font(.xCaption2.weight(.bold))
                             .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(.white.opacity(0.2), in: Capsule())
                     }
@@ -137,7 +137,7 @@ struct CalendarCard: View {
             }
             .cardButton()
             .disabled(e.route == nil)
-            if let t = timeText { Text(t).font(.caption).foregroundStyle(.secondary) }
+            if let t = timeText { Text(t).font(.xCaption).foregroundStyle(.secondary) }
         }
     }
 

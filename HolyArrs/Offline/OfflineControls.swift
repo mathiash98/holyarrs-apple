@@ -56,10 +56,10 @@ private struct OfflineLibraryLinkCard: View {
             OfflineLibraryView()
         } label: {
             HStack(spacing: 16) {
-                Image(systemName: "arrow.down.circle").font(.title)
+                Image(systemName: "arrow.down.circle").font(.xTitle)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Offline").font(.headline)
-                    Text(summary).font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                    Text("Offline").font(.xHeadline)
+                    Text(summary).font(.xCallout).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer()
                 Image(systemName: "chevron.right").foregroundStyle(.secondary)
@@ -158,7 +158,7 @@ struct OfflineItemControl: View {
                 if let rec, rec.state == .downloading || rec.state == .paused {
                     Circle().stroke(.white.opacity(0.2), lineWidth: 3)
                     Circle().trim(from: 0, to: rec.progress).stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
-                    Image(systemName: rec.state == .paused ? "pause.fill" : "stop.fill").font(.caption2)
+                    Image(systemName: rec.state == .paused ? "pause.fill" : "stop.fill").font(.xCaption2)
                 } else {
                     Image(systemName: icon).foregroundStyle(rec?.state == .done ? Color.green : Color.primary)
                 }

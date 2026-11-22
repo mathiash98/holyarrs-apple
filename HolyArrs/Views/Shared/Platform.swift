@@ -85,9 +85,9 @@ struct SectionTitle: View {
     var subtitle: String? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(text).font(.title2.bold())
+            Text(text).font(.xTitle2.bold())
             if let subtitle, !subtitle.isEmpty {
-                Text(subtitle).font(.callout).foregroundStyle(.secondary)
+                Text(subtitle).font(.xCallout).foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -101,7 +101,7 @@ struct PageHeading: View {
     var padded = true
     var body: some View {
         Text(text)
-            .font(.largeTitle.bold())
+            .font(.xLargeTitle.bold())
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, padded ? Metrics.gutter : 0)
     }

@@ -31,7 +31,7 @@ struct SignInView: View {
             VStack(spacing: 28) {
                 VStack(spacing: 8) {
                     Image(systemName: "sparkles.tv.fill").font(.system(size: 64)).foregroundStyle(.tint)
-                    Text("HolyArrs").font(.largeTitle.bold())
+                    Text("HolyArrs").font(.xLargeTitle.bold())
                     Text("Sign in to your HolyArrs server").foregroundStyle(.secondary)
                 }
                 .padding(.top, 40)
@@ -73,7 +73,7 @@ struct SignInView: View {
 
     private var serverStep: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Server address").font(.headline)
+            Text("Server address").font(.xHeadline)
             TextField("https://holyarrs.example.ts.net", text: $server)
                 .textContentType(.URL)
                 .keyboardType(.URL)
@@ -91,7 +91,7 @@ struct SignInView: View {
     private var credentialsStep: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Text(server).font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                Text(server).font(.xCallout).foregroundStyle(.secondary).lineLimit(1)
                 Spacer()
                 Button("Change") { step = .server; error = nil }
             }
@@ -101,7 +101,7 @@ struct SignInView: View {
                 } icon: {
                     Image(systemName: "exclamationmark.shield").foregroundStyle(.orange)
                 }
-                .font(.callout)
+                .font(.xCallout)
             }
             Picker("Sign in with", selection: $way) {
                 ForEach(availableWays) { Text($0.rawValue).tag($0) }
@@ -118,7 +118,7 @@ struct SignInView: View {
                     .textContentType(.password)
                 if way == .jellyfin {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Jellyfin address (for playback)").font(.caption).foregroundStyle(.secondary)
+                        Text("Jellyfin address (for playback)").font(.xCaption).foregroundStyle(.secondary)
                         TextField("https://jellyfin.example.ts.net", text: $jellyfinServer)
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
@@ -134,7 +134,7 @@ struct SignInView: View {
                 .disabled(name.isEmpty || password.isEmpty)
             case .apiKey:
                 Text("Make a key in HolyArrs under Settings › Sign-in and security › API keys, then paste it here.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.xCallout).foregroundStyle(.secondary)
                 SecureField("API key", text: $apiKey)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -151,7 +151,7 @@ struct SignInView: View {
 
     private var twoFactorStep: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Two-factor code").font(.headline)
+            Text("Two-factor code").font(.xHeadline)
             Text("Enter the 6-digit code from your authenticator app, or a backup code.").foregroundStyle(.secondary)
             TextField("123456", text: $code)
                 .keyboardType(.numberPad)
