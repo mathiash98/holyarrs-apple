@@ -1,6 +1,6 @@
-# HolyArrs for Apple Vision Pro and Apple TV
+# HolyArrs for Apple Vision Pro, Apple TV, iPhone and iPad
 
-A native SwiftUI client for [HolyArrs](https://github.com/HolyArrs/HolyArrs), the self-hosted all-in-one replacement for Sonarr, Radarr, Prowlarr and Seerr. One app, built for **visionOS** and **tvOS** from the same code: browse and discover, ask for movies and shows, approve requests, watch downloads, and **play your library through Jellyfin** with resume, subtitles and next-episode autoplay.
+A native SwiftUI client for [HolyArrs](https://github.com/HolyArrs/HolyArrs), the self-hosted all-in-one replacement for Sonarr, Radarr, Prowlarr and Seerr. One app, built for **visionOS**, **tvOS** and **iOS/iPadOS** from the same code: browse and discover, ask for movies and shows, approve requests, watch downloads, and **play your library through Jellyfin** with resume, subtitles and next-episode autoplay.
 
 Not affiliated with the HolyArrs project.
 
@@ -26,7 +26,8 @@ Not affiliated with the HolyArrs project.
 ### Platform design
 
 - **visionOS**: tab ornament, glass panels, gaze highlight on every card and row, full-window player that docks in environments.
-- **tvOS**: top tab bar, focus-driven card buttons, large type, the standard tvOS player.
+- **tvOS**: top tab bar, focus-driven card buttons, large type, the standard tvOS player; the backdrop follows focus.
+- **iOS / iPadOS**: tab bar on iPhone, sidebar or top tabs on iPad, compact cards on iPhone, full-screen player with Picture in Picture.
 
 ### Playback
 
@@ -43,7 +44,7 @@ Trailers play in the same player from the stream HolyArrs already resolved (`/ap
 ## Requirements
 
 - Xcode 26 or newer, [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
-- visionOS 26 or tvOS 26
+- visionOS 26, tvOS 26 or iOS/iPadOS 26
 - HolyArrs 1.2 or newer, reachable from the device (for example over Tailscale with HTTPS)
 - Optional: Jellyfin 10.10+ for playback
 
@@ -85,6 +86,12 @@ Pick the **HolyArrs** scheme, choose an Apple Vision Pro or Apple TV destination
    xcrun devicectl list devices          # find the device's UDID
    scripts/device-install.sh <udid>      # Release build, signed, installed
    ```
+
+## Install on iPhone or iPad
+
+1. Connect the device with a cable (or pair it over Wi-Fi in Xcode › Devices and Simulators) and trust the Mac.
+2. Turn on Developer Mode (Settings › Privacy & Security › Developer Mode) when asked, and restart.
+3. Choose the device as the run destination and press Run, or use `scripts/device-install.sh <udid>`.
 
 ## Install on Apple TV
 
