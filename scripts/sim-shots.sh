@@ -1,5 +1,5 @@
 #!/bin/bash
-# Takes a screenshot per page. Usage: scripts/sim-shots.sh <visionos|tvos> <outdir> name:tab[:route[:search]] ...
+# Takes a screenshot per page. Usage: scripts/sim-shots.sh <visionos|tvos|ios> <outdir> name:tab[:route[:search]] ...
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source scripts/lib.sh

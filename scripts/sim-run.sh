@@ -1,6 +1,6 @@
 #!/bin/bash
 # Installs the DEBUG simulator build and launches it signed in with an API key (read-only: the app blocks changes).
-# Usage: scripts/sim-run.sh <visionos|tvos> [tab] [route] [search]   e.g. scripts/sim-run.sh tvos explore title/movie/350
+# Usage: scripts/sim-run.sh <visionos|tvos|ios> [tab] [route] [search]   e.g. scripts/sim-run.sh tvos explore title/movie/350
 # Needs HOLYARRS_SERVER and either HOLYARRS_API_KEY or HOLYARRS_KEYCHAIN_SERVICE (+ _ACCOUNT) for the key.
 # Optional: JF_TOKEN + JF_USER (+ JELLYFIN_SERVER) for Jellyfin rows and playback, PLAY=<seconds>, ASK=1.
 set -euo pipefail

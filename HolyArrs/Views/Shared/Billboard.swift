@@ -56,13 +56,16 @@ struct Billboard<Actions: View>: View {
                         .minimumScaleFactor(0.6)
                         .shadow(color: .black.opacity(0.6), radius: 10)
                 }
-                HStack(spacing: 10) {
+                // Pills first, then the facts; both wrap onto more lines on narrow screens.
+                FlowLayout(spacing: 8, lineSpacing: 8) {
                     if let q = app.quality(kind: content.kind, tmdb: content.tmdb, titleID: content.titleID) { QualityChip(label: q) }
                     ForEach(content.pills, id: \.self) { Pill(text: $0) }
+                }
+                if !content.meta.isEmpty {
                     Text(content.meta.joined(separator: "  ·  "))
                         .font(metaFont)
                         .foregroundStyle(.white.opacity(0.85))
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
                 if let h = content.headline, !h.isEmpty {
                     Text(h).font(headlineFont).foregroundStyle(.white)
@@ -77,7 +80,7 @@ struct Billboard<Actions: View>: View {
                         .lineLimit(overviewLines)
                         .frame(maxWidth: overviewWidth, alignment: .leading)
                 }
-                HStack(spacing: 16) {
+                FlowLayout(spacing: 14, lineSpacing: 12) {
                     actions()
                     if playing {
                         Button { muted.toggle() } label: {
@@ -169,6 +172,8 @@ struct PlayButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
+            .lineLimit(1)
+            .fixedSize()
             .padding(.horizontal, 26).padding(.vertical, 14)
             .background(.white, in: Capsule())
             .foregroundStyle(.black)
@@ -203,6 +208,8 @@ struct SecondaryActionStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
+            .lineLimit(1)
+            .fixedSize()
             .padding(.horizontal, 22).padding(.vertical, 14)
             .background(Color(white: 0.38).opacity(configuration.isPressed ? 0.95 : 0.75), in: Capsule())
             .foregroundStyle(.white)
@@ -233,5 +240,43 @@ struct Pill: View {
             .background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             .foregroundStyle(.white)
             .fixedSize()
+    }
+}
+
+/// Lays children out left to right and wraps onto new lines when they do not fit (pills, buttons).
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    var lineSpacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var x: CGFloat = 0, y: CGFloat = 0, lineHeight: CGFloat = 0, widest: CGFloat = 0
+        for v in subviews {
+            let size = v.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
+            if x > 0, x + size.width > maxWidth {
+                y += lineHeight + lineSpacing
+                x = 0
+                lineHeight = 0
+            }
+            x += size.width + spacing
+            lineHeight = max(lineHeight, size.height)
+            widest = max(widest, x - spacing)
+        }
+        return CGSize(width: min(widest, maxWidth), height: y + lineHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX, y = bounds.minY, lineHeight: CGFloat = 0
+        for v in subviews {
+            let size = v.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil))
+            if x > bounds.minX, x + size.width > bounds.maxX {
+                y += lineHeight + lineSpacing
+                x = bounds.minX
+                lineHeight = 0
+            }
+            v.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+            x += size.width + spacing
+            lineHeight = max(lineHeight, size.height)
+        }
     }
 }

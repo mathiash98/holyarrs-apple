@@ -11,6 +11,10 @@ Not affiliated with the HolyArrs project.
 | ![Title on visionOS](Docs/screenshots/visionos-title-billboard.jpg) | ![Title on tvOS](Docs/screenshots/tvos-title.jpg) |
 | ![Library on visionOS](Docs/screenshots/visionos-library.jpg) | ![Search on tvOS](Docs/screenshots/tvos-searchq.jpg) |
 
+| iPhone | | | |
+|---|---|---|---|
+| ![Home on iPhone](Docs/screenshots/ios-home.jpg) | ![Title on iPhone](Docs/screenshots/ios-title.jpg) | ![Library on iPhone](Docs/screenshots/ios-library.jpg) | ![Search on iPhone](Docs/screenshots/ios-search.jpg) |
+
 ## Features
 
 - **Home**: a featured billboard (a recent arrival with its logo, headline, overview, rating and a muted trailer preview), then rows of landscape logo tiles: Continue Watching and Next Up with progress bars (one click plays), New in your library, Trending Now, New seasons, Following and Coming soon, plus your requests, approvals and library totals.
@@ -117,8 +121,8 @@ Then open HolyArrs, enter your server address and sign in.
 | Script | What it does |
 |---|---|
 | `scripts/device-install.sh <udid>` | Release build for a paired Vision Pro, Apple TV, iPhone or iPad, and install. Uses `ASC_KEY_ID` / `ASC_ISSUER_ID` / `ASC_KEY_PATH` (App Store Connect API key) when set, otherwise your Xcode account. |
-| `scripts/sim-run.sh <visionos\|tvos> [tab] [route] [search]` (iOS: run from Xcode) | Installs the DEBUG simulator build and launches it signed in with an API key. |
-| `scripts/sim-shots.sh <visionos\|tvos> <dir> name:tab[:route[:search]] ...` | A screenshot per page. |
+| `scripts/sim-run.sh <visionos\|tvos\|ios> [tab] [route] [search]` | Installs the DEBUG simulator build and launches it signed in with an API key. |
+| `scripts/sim-shots.sh <visionos\|tvos\|ios> <dir> name:tab[:route[:search]] ...` | A screenshot per page. |
 | `scripts/make-icons.py` | Regenerates the layered app icons from the HolyArrs mark. |
 
 Put personal values for the scripts in `scripts/local.env` (git-ignored), for example:

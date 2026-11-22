@@ -121,7 +121,7 @@ struct TitleDetailView: View {
 
     @ViewBuilder
     private func actions(_ m: Model) -> some View {
-        HStack(spacing: 18) {
+        Group {
             if let target = m.playTarget {
                 Button {
                     Task { await play(target, resume: true) }

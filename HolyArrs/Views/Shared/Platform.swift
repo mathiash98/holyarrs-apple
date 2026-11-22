@@ -18,7 +18,7 @@ enum Metrics {
     static let cardSpacing: CGFloat = 40
     static let corner: CGFloat = 12
     #else
-    static var posterWidth: CGFloat { isPhone ? 120 : 200 }
+    static var posterWidth: CGFloat { isPhone ? 108 : 200 }
     static var wideWidth: CGFloat { isPhone ? 260 : 320 }
     static var gutter: CGFloat { isPhone ? 16 : 40 }
     static var rowSpacing: CGFloat { isPhone ? 22 : 32 }

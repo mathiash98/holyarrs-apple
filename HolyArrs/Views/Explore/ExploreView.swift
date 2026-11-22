@@ -47,7 +47,7 @@ struct ExploreView: View {
                     .frame(maxWidth: 520)
                     Spacer()
                     NavigationLink(value: Route.popular) {
-                        Label("New & Popular", systemImage: "flame").padding(.horizontal, 18).padding(.vertical, 10)
+                        Label("New & Popular", systemImage: "flame").lineLimit(1).fixedSize().padding(.horizontal, 18).padding(.vertical, 10)
                     }
                     .rowButton()
                 }
