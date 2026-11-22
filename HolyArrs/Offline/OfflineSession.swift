@@ -32,22 +32,22 @@ final class OfflineAppDelegate: NSObject, UIApplicationDelegate {
 /// Receives AVAssetDownloadURLSession events on the main queue and passes them to the store. Holds no state.
 nonisolated final class OfflineSessionDelegate: NSObject, AVAssetDownloadDelegate {
     func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, willDownloadTo location: URL) {
-        let id = assetDownloadTask.taskDescription
+        let d = assetDownloadTask.taskDescription
         let n = assetDownloadTask.taskIdentifier
-        onMain { OfflineStore.shared.willDownload(id: id, task: n, to: location) }
+        onMain { OfflineStore.shared.willDownload(description: d, task: n, to: location) }
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
-        let id = task.taskDescription
+        let d = task.taskDescription
         let n = task.taskIdentifier
         let failure = (error as NSError?).map {
             OfflineFailure(cancelled: $0.domain == NSURLErrorDomain && $0.code == NSURLErrorCancelled, message: $0.localizedDescription)
         }
-        onMain { OfflineStore.shared.didComplete(id: id, task: n, failure: failure) }
+        onMain { OfflineStore.shared.didComplete(description: d, task: n, failure: failure) }
     }
 
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        onMain { OfflineAppDelegate.finishBackgroundEvents() }
+        onMain { OfflineStore.shared.backgroundEventsFinished() }
     }
 
     /// The session's delegate queue is the main queue, so this runs in place; the fallback keeps event order.

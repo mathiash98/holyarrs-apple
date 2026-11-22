@@ -88,6 +88,9 @@ nonisolated struct OfflineItem: Codable, Identifiable, Hashable, Sendable {
     var location: String?
     var mediaSourceID: String?
     var playSessionID: String?
+    /// Identifies the current download attempt; the task carries it as "<id>|<attempt>" so session events can be
+    /// matched to the record even after a relaunch.
+    var attempt: String?
     var addedAt: Date
     var finishedAt: Date?
 

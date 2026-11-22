@@ -150,6 +150,7 @@ struct OfflineLibraryView: View {
 struct OfflineBanner: View {
     @Environment(AppModel.self) private var app
     @State private var trying = false
+    @State private var confirmSignOut = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -171,9 +172,26 @@ struct OfflineBanner: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(trying)
+            Menu {
+                if let e = app.lastError { Text(e) }
+                Button("Sign in again") { app.phase = .signedOut }
+                Button("Sign out", role: .destructive) { confirmSignOut = true }
+            } label: {
+                Label("More", systemImage: "ellipsis")
+            }
+            .menuStyle(.button)
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
+            .labelStyle(.iconOnly)
         }
         .panel(corner: 22, padding: 20)
         .padding(.horizontal, Metrics.gutter)
+        .confirmationDialog("Sign out of HolyArrs?", isPresented: $confirmSignOut, titleVisibility: .visible) {
+            Button("Sign out", role: .destructive) { Task { await app.signOut() } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Downloads stay on this device.")
+        }
     }
 }
 

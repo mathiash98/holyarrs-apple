@@ -2,6 +2,7 @@
 import AVFoundation
 import Foundation
 import Observation
+import UIKit
 
 /// What is downloaded to this device, and the background downloads that fetch it.
 ///
@@ -29,6 +30,18 @@ final class OfflineStore {
     @ObservationIgnored private var ticker: Task<Void, Never>?
     @ObservationIgnored private var activated = false
     @ObservationIgnored private var demo = false
+    /// Set when Jellyfin could not be reached to start a download; the queue waits until the app is online again.
+    @ObservationIgnored private var holdUntilOnline = false
+    /// The system's background-events handler is given back once the next download has been started.
+    @ObservationIgnored private var backgroundEventsPending = false
+    @ObservationIgnored private var savedClient: JellyfinClient?
+
+    /// The app's Jellyfin client, or one from the saved login when the system woke the app in the background.
+    private var client: JellyfinClient? {
+        if let c = app?.jellyfinClient { return c }
+        if savedClient == nil, let login = JellyfinStore.load() { savedClient = JellyfinClient(login: login) }
+        return savedClient
+    }
 
     private init() {}
 
@@ -58,22 +71,26 @@ final class OfflineStore {
     private func reattach() async {
         guard let session else { return }
         for t in await session.allTasks {
-            guard let t = t as? AVAssetDownloadTask else { continue }
-            guard let id = t.taskDescription, let i = index(id), items[i].state != .done else {
+            guard let t = t as? AVAssetDownloadTask, t.state != .completed else { continue }
+            guard let i = match(t.taskDescription), items[i].state != .done else {
                 t.cancel()
                 continue
             }
-            if t.state == .completed { continue }
-            tasks[id] = t
+            tasks[items[i].id] = t
             items[i].state = t.state == .suspended ? .paused : .downloading
         }
         for i in items.indices where items[i].state == .downloading && tasks[items[i].id] == nil {
-            // The task is gone (the app was closed from the app switcher): start that one again.
-            removePackage(of: items[i])
-            items[i].location = nil
-            items[i].progress = 0
-            items[i].bytes = nil
-            items[i].state = .queued
+            // No task: it either finished while the app was not running (its event may still arrive and is matched
+            // by the attempt id), or the system dropped it (the app was closed from the app switcher).
+            if let loc = items[i].location, AVURLAsset(url: OfflinePaths.resolve(loc)).assetCache?.isPlayableOffline == true {
+                items[i].state = .done
+                items[i].progress = 1
+                items[i].finishedAt = items[i].finishedAt ?? .now
+                measure(items[i].id, OfflinePaths.resolve(loc))
+            } else {
+                // Kept, not deleted: Resume starts it over.
+                items[i].state = .paused
+            }
         }
         save()
         startNext()
@@ -83,6 +100,7 @@ final class OfflineStore {
     /// The app reached HolyArrs: sends watch positions made offline to Jellyfin, reads newer ones, and resumes the queue.
     func cameOnline() async {
         activate()
+        holdUntilOnline = false
         await syncPending()
         await refreshFromServer()
         startNext()
@@ -92,6 +110,12 @@ final class OfflineStore {
 
     func item(_ id: String) -> OfflineItem? { items.first { $0.id == id } }
     private func index(_ id: String) -> Int? { items.firstIndex { $0.id == id } }
+
+    /// The record a task belongs to, from its "<id>|<attempt>" description.
+    private func match(_ description: String?) -> Int? {
+        guard let parts = description?.split(separator: "|", maxSplits: 1).map(String.init), parts.count == 2 else { return nil }
+        return items.firstIndex { $0.id == parts[0] && $0.attempt == parts[1] }
+    }
 
     /// The playable package of a finished download.
     func localURL(_ id: String) -> URL? {
@@ -155,6 +179,7 @@ final class OfflineStore {
         switch items[i].state {
         case .paused:
             items[i].state = .queued
+            items[i].error = nil
         case .failed:
             removePackage(of: items[i])
             items[i].location = nil
@@ -165,13 +190,15 @@ final class OfflineStore {
         default:
             return
         }
+        holdUntilOnline = false
         save()
         startNext()
     }
 
     /// Starts the first queued download when nothing else is running.
     func startNext() {
-        guard !demo, session != nil, preparing == nil, !items.contains(where: { $0.state == .downloading }) else { return }
+        defer { finishBackgroundEventsIfIdle() }
+        guard !demo, !holdUntilOnline, session != nil, preparing == nil, !items.contains(where: { $0.state == .downloading }) else { return }
         guard let next = items.first(where: { $0.state == .queued }) else { return }
         if let t = tasks[next.id] {
             update(next.id) { $0.state = .downloading }
@@ -180,7 +207,7 @@ final class OfflineStore {
             startTicker()
             return
         }
-        guard let client = app?.jellyfinClient, client.login.userID == next.userID else { return }
+        guard let client, client.login.userID == next.userID else { return }
         // A paused download whose task was lost (relaunch) starts over: drop what it had saved.
         removePackage(of: next)
         update(next.id) {
@@ -194,9 +221,12 @@ final class OfflineStore {
     }
 
     private func begin(_ rec: OfflineItem, client: JellyfinClient) async {
+        // Enough time to start it when the system woke the app for the previous download's completion.
+        let bg = UIApplication.shared.beginBackgroundTask(withName: "Start offline download", expirationHandler: nil)
         defer {
             preparing = nil
             startNext()
+            UIApplication.shared.endBackgroundTask(bg)
         }
         do {
             let stream = try await OfflineStream.request(itemID: rec.id, quality: rec.quality, client: client)
@@ -219,14 +249,21 @@ final class OfflineStore {
                 return
             }
             let task = session.makeAssetDownloadTask(downloadConfiguration: config)
-            task.taskDescription = rec.id
+            let attempt = UUID().uuidString
+            task.taskDescription = "\(rec.id)|\(attempt)"
             tasks[rec.id] = task
+            items[j].attempt = attempt
             items[j].state = .downloading
             items[j].error = nil
             items[j].progress = 0
             items[j].mediaSourceID = stream.mediaSourceID
             items[j].playSessionID = stream.playSessionID
             task.resume()
+            save()
+        } catch let e as URLError {
+            // Jellyfin is out of reach: keep it queued and wait for the app to be online again.
+            holdUntilOnline = true
+            update(rec.id) { $0.error = "Waiting for Jellyfin (\(e.localizedDescription))" }
             save()
         } catch {
             update(rec.id) {
@@ -237,10 +274,22 @@ final class OfflineStore {
         }
     }
 
+    /// The system finished delivering background session events.
+    func backgroundEventsFinished() {
+        backgroundEventsPending = true
+        finishBackgroundEventsIfIdle()
+    }
+
+    private func finishBackgroundEventsIfIdle() {
+        guard backgroundEventsPending, preparing == nil else { return }
+        backgroundEventsPending = false
+        OfflineAppDelegate.finishBackgroundEvents()
+    }
+
     // MARK: Session events (from OfflineSessionDelegate, on the main queue)
 
-    func willDownload(id: String?, task: Int, to location: URL) {
-        guard let id, let i = index(id), tasks[id]?.taskIdentifier == task else {
+    func willDownload(description: String?, task: Int, to location: URL) {
+        guard let i = match(description) else {
             orphans[task] = location
             return
         }
@@ -248,18 +297,19 @@ final class OfflineStore {
         save()
     }
 
-    func didComplete(id: String?, task: Int, failure: OfflineFailure?) {
+    func didComplete(description: String?, task: Int, failure: OfflineFailure?) {
         if let orphan = orphans.removeValue(forKey: task) {
             try? FileManager.default.removeItem(at: orphan)
         }
-        guard let id, let i = index(id), tasks[id]?.taskIdentifier == task else {
+        guard let i = match(description) else {
             startNext()
             return
         }
-        tasks[id] = nil
+        let id = items[i].id
+        if tasks[id]?.taskIdentifier == task { tasks[id] = nil }
         let sessionID = items[i].playSessionID
         let url = items[i].location.map(OfflinePaths.resolve)
-        if failure == nil, let url, AVURLAsset(url: url).assetCache?.isPlayableOffline == true {
+        if failure == nil, let url {
             items[i].state = .done
             items[i].progress = 1
             items[i].finishedAt = .now
@@ -424,7 +474,7 @@ final class OfflineStore {
     }
 
     private func stopTranscode(_ playSessionID: String?) {
-        guard let s = playSessionID, let c = app?.jellyfinClient else { return }
+        guard let s = playSessionID, let c = client else { return }
         Task { await OfflineStream.stop(c, playSessionID: s) }
     }
 
