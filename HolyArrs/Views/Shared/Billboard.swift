@@ -94,6 +94,9 @@ struct Billboard<Actions: View>: View {
                         }
                         .buttonStyle(.bordered)
                         .buttonBorderShape(.circle)
+                        #if os(tvOS)
+                        .tint(nil)
+                        #endif
                     }
                 }
                 .padding(.top, 6)
@@ -211,7 +214,7 @@ enum BillboardMetrics {
     #endif
     static var height: CGFloat {
         #if os(tvOS)
-        760
+        880
         #else
         Metrics.isPhone ? 560 : 620
         #endif
@@ -236,7 +239,8 @@ extension View {
     @ViewBuilder
     func secondaryAction() -> some View {
         #if os(tvOS)
-        self.buttonStyle(.bordered)
+        // Neutral like Netflix: translucent grey, white when focused (not the app's red tint).
+        self.buttonStyle(.bordered).tint(nil)
         #else
         self.buttonStyle(SecondaryActionStyle())
             .contentShape(.hoverEffect, Capsule())

@@ -192,11 +192,11 @@ struct TitleDetailView: View {
                 .secondaryAction()
             }
             if let mine = myMovieAsk(m) {
-                // One click takes the ask back.
+                // Like Netflix's My List: a check mark with the ask's status; one click takes the ask back.
                 Button {
                     Task { await removeAsk(mine) }
                 } label: {
-                    Label("Asked", systemImage: "checkmark.circle.fill")
+                    Label(askedLabel(mine), systemImage: "checkmark")
                 }
                 .secondaryAction()
                 .disabled(asking)
@@ -204,7 +204,7 @@ struct TitleDetailView: View {
                 Button {
                     if m.kind == "movie" { Task { await askMovie(m) } } else { showAsk = true }
                 } label: {
-                    Label(m.inLibrary ? "Ask for more" : "Ask", systemImage: "plus.circle.fill")
+                    Label(m.kind == "show" && m.inLibrary ? "Ask for more" : "Ask", systemImage: "plus")
                 }
                 .secondaryAction()
                 .disabled(asking || (app.me?.can("ask") != true && app.me?.isOwner != true))
@@ -257,10 +257,18 @@ struct TitleDetailView: View {
         }
     }
 
+    /// "Asked", plus where the ask is: waiting for approval, approved, downloading.
+    private func askedLabel(_ a: AskBrief) -> String {
+        if !downloads.isEmpty { return "Asked · Downloading" }
+        let s = a.state_label ?? a.state?.capitalized ?? ""
+        return s.isEmpty ? "Asked" : "Asked · \(s)"
+    }
+
     private func canAsk(_ m: Model) -> Bool {
         guard m.tmdb != nil, m.meta?.never_add != true else { return false }
         if let a = m.ask, a.mine == true, a.state == "asked" || a.state == "approved" { return m.kind == "show" }
-        if m.kind == "movie" { return !m.inLibrary }
+        // A movie can be asked for until it is on disk (also when it is wanted in the library without an ask).
+        if m.kind == "movie" { return m.lib?.hasFiles != true }
         return true
     }
 
@@ -332,7 +340,8 @@ struct TitleDetailView: View {
             if app.quality(kind: m.kind, tmdb: m.tmdb, titleID: m.titleID) == nil { out.insert(fq.label, at: 0) }
             out += fq.detail.split(separator: "·").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         }
-        if let a = m.ask, let label = a.state_label ?? a.state, m.lib?.hasFiles != true {
+        // My own movie ask already shows on the Asked button.
+        if let a = m.ask, let label = a.state_label ?? a.state, m.lib?.hasFiles != true, myMovieAsk(m) == nil {
             out.append("Asked · \(label)")
         }
         if m.kind == "movie", let p = m.jf?.progress {

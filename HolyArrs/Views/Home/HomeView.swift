@@ -61,6 +61,10 @@ struct HomeView: View {
                 }
                 .padding(.bottom, 60)
             }
+            #if os(tvOS)
+            // Immersive: the hero runs to the top edge, under the floating tab bar.
+            .ignoresSafeArea(edges: .top)
+            #endif
             .refreshable { await load() }
         }
         #if os(visionOS)

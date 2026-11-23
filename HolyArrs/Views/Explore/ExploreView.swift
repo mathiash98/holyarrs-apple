@@ -85,6 +85,9 @@ struct ExploreView: View {
             }
             .padding(.vertical, 20)
         }
+        #if os(tvOS)
+        .ignoresSafeArea(edges: .top)
+        #endif
         .task(id: kind) { await loadAll() }
     }
 
