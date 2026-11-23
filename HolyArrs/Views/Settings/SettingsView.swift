@@ -6,6 +6,7 @@ struct SettingsView: View {
     @State private var showJellyfin = false
     @AppStorage("autoplayPreviews") private var autoplayPreviews = true
     @AppStorage("autoplayNext") private var autoplayNext = true
+    @AppStorage("previewsMuted") private var previewsMuted = false
 
     var body: some View {
         Form {
@@ -28,6 +29,8 @@ struct SettingsView: View {
             }
             Section("Playback") {
                 Toggle("Autoplay trailer previews", isOn: $autoplayPreviews)
+                Toggle("Play previews muted", isOn: $previewsMuted)
+                    .disabled(!autoplayPreviews)
                 Toggle("Autoplay next episode", isOn: $autoplayNext)
             }
             Section("Messages") {

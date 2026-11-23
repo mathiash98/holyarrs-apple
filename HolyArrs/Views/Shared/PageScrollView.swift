@@ -42,6 +42,8 @@ struct PageScrollView<Content: View>: View {
             }
         }
         .modifier(RowFocusSection(on: axes == .horizontal))
+        // Pages run edge to edge like Netflix; text keeps its own gutter and rows scroll off the screen edges.
+        .ignoresSafeArea(edges: axes == .vertical ? .horizontal : [])
         #else
         if let position {
             ScrollView(axes) { content() }.scrollPosition(position)

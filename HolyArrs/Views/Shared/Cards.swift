@@ -110,6 +110,14 @@ struct PersonCard: View {
     #endif
 
     var body: some View {
+        #if os(tvOS)
+        // The whole card is one focusable link: the round photo grows and gets a white ring, no square platter.
+        NavigationLink(value: Route.person(id ?? "")) {
+            PersonCardLabel(name: name, detail: detail, image: image, size: size)
+        }
+        .buttonStyle(PersonFocusStyle())
+        .disabled(id == nil || id?.isEmpty == true)
+        #else
         VStack(spacing: titleGap) {
             NavigationLink(value: Route.person(id ?? "")) {
                 RemoteImage(path: image)
@@ -123,8 +131,50 @@ struct PersonCard: View {
             if let detail { Text(detail).font(.xCaption2).foregroundStyle(.secondary).lineLimit(1) }
         }
         .frame(width: size + 20)
+        #endif
     }
 }
+
+#if os(tvOS)
+/// Photo, name and role, tight together. Reads the button's focus to draw the ring and brighten the text.
+private struct PersonCardLabel: View {
+    let name: String
+    let detail: String?
+    let image: String?
+    let size: CGFloat
+    @Environment(\.isFocused) private var focused
+
+    var body: some View {
+        VStack(spacing: 0) {
+            RemoteImage(path: image)
+                .overlay { if image == nil { Image(systemName: "person.fill").font(.xLargeTitle).foregroundStyle(.secondary) } }
+                .frame(width: size, height: size)
+                .clipShape(Circle())
+                .overlay { Circle().strokeBorder(.white, lineWidth: focused ? 4 : 0) }
+                .shadow(color: .black.opacity(focused ? 0.5 : 0), radius: 14, y: 8)
+                .scaleEffect(focused ? 1.1 : 1, anchor: .bottom)
+            VStack(spacing: 2) {
+                Text(name).font(.xCaption.weight(.semibold)).foregroundStyle(focused ? .white : .white.opacity(0.85))
+                if let detail, !detail.isEmpty {
+                    Text(detail).font(.xCaption2).foregroundStyle(.white.opacity(focused ? 0.75 : 0.55))
+                }
+            }
+            .lineLimit(1)
+            .multilineTextAlignment(.center)
+            .padding(.top, 14)
+        }
+        .frame(width: size + 30)
+        .animation(.easeOut(duration: 0.18), value: focused)
+    }
+}
+
+/// No platter: the label draws its own focus look.
+private struct PersonFocusStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.opacity(configuration.isPressed ? 0.75 : 1)
+    }
+}
+#endif
 
 /// A horizontal row of cards with a heading.
 struct Shelf<Item: Identifiable, Card: View>: View {

@@ -30,7 +30,8 @@ struct Billboard<Actions: View>: View {
     var overviewLines = 3
     @ViewBuilder var actions: () -> Actions
 
-    @State private var muted = true
+    /// Trailers play with sound unless "Play previews muted" is on in Settings.
+    @State private var muted = UserDefaults.standard.bool(forKey: "previewsMuted")
     @State private var playing = false
     @State private var zoom = false
 
