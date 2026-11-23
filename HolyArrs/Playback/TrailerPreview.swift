@@ -54,6 +54,7 @@ struct TrailerPreview: View {
             var t = Transaction()
             t.disablesAnimations = true
             withTransaction(t) { playing = true }
+            if box == nil { await measureBars(shared) }
             return
         }
         try? await Task.sleep(for: .seconds(1.5))
@@ -64,22 +65,44 @@ struct TrailerPreview: View {
         let q = AVQueuePlayer()
         q.isMuted = muted
         let looper = AVPlayerLooper(player: q, templateItem: item)
-        TrailerPlayers.shared.adopt(key, player: q, looper: looper)
+        TrailerPlayers.shared.adopt(key, player: q, looper: looper, url: url)
         TrailerPlayers.shared.hold()
         holding = true
         player = q
         q.play()
-        let k = key
-        Task {
-            let found = await Letterbox.measure(url: url)
-            TrailerPlayers.shared.setLetterbox(found, for: k)
-            if player === q { box = found }
-        }
         // Wait for the first frames before fading in.
         for _ in 0 ..< 40 {
             if Task.isCancelled { return }
-            if q.timeControlStatus == .playing && q.currentTime().seconds > 0.3 { playing = true; return }
+            if q.timeControlStatus == .playing && q.currentTime().seconds > 0.3 { playing = true; break }
             try? await Task.sleep(for: .milliseconds(250))
+        }
+        await measureBars(q)
+    }
+
+    /// Reads frames as they play (the trailers are HLS streams, which cannot be opened a second time for
+    /// stills) and zooms past the black bars once a few frames agree. Part of this view's task.
+    private func measureBars(_ q: AVQueuePlayer) async {
+        guard let item = q.currentItem else { return }
+        let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+        item.add(output)
+        defer { item.remove(output) }
+        var bars: [CGFloat] = []
+        for _ in 0 ..< 12 {
+            try? await Task.sleep(for: .seconds(1.5))
+            if Task.isCancelled { return }
+            let t = output.itemTime(forHostTime: CACurrentMediaTime())
+            guard let buf = output.copyPixelBuffer(forItemTime: t, itemTimeForDisplay: nil),
+                  let b = Letterbox.barFraction(buf) else { continue }
+            bars.append(b)
+            // The second largest reading: a full-frame shot or logo reads 0, one dark scene cannot inflate it.
+            if bars.count >= 3 {
+                let sorted = bars.sorted()
+                let found = Letterbox(size: item.presentationSize, bar: sorted[sorted.count - 2])
+                if found != box {
+                    withAnimation(.easeInOut(duration: 0.4)) { box = found }
+                    TrailerPlayers.shared.setLetterbox(found, for: key)
+                }
+            }
         }
     }
 
@@ -109,7 +132,9 @@ final class TrailerPlayers {
     func player(for key: String) -> AVQueuePlayer? { self.key == key ? current : nil }
 
     /// Takes over a new trailer; the previous one is stopped for good.
-    func adopt(_ key: String, player: AVQueuePlayer, looper: AVPlayerLooper) {
+    private(set) var url: URL?
+
+    func adopt(_ key: String, player: AVQueuePlayer, looper: AVPlayerLooper, url: URL) {
         if let old = current, old !== player {
             old.pause()
             old.removeAllItems()
@@ -117,6 +142,7 @@ final class TrailerPlayers {
         self.key = key
         current = player
         self.looper = looper
+        self.url = url
         letterbox = nil
         holders = 0
     }
@@ -172,48 +198,32 @@ nonisolated struct Letterbox: Sendable, Equatable {
         return min(max(1, frame.height / picture), 1.6)
     }
 
-    static func measure(url: URL) async -> Letterbox? {
-        let asset = AVURLAsset(url: url)
-        guard let track = try? await asset.loadTracks(withMediaType: .video).first,
-              let natural = try? await track.load(.naturalSize),
-              let transform = try? await track.load(.preferredTransform) else { return nil }
-        let r = CGRect(origin: .zero, size: natural).applying(transform)
-        let size = CGSize(width: abs(r.width), height: abs(r.height))
-        let gen = AVAssetImageGenerator(asset: asset)
-        gen.appliesPreferredTrackTransform = true
-        gen.maximumSize = CGSize(width: 192, height: 192)
-        let duration = (try? await asset.load(.duration).seconds) ?? 90
-        var bars: [CGFloat] = []
-        // Five frames spread over the trailer: studio logos at the start are often full frame and a dark scene
-        // can look like a bar, so the median counts. All-black frames are skipped.
-        for f in [0.15, 0.3, 0.45, 0.6, 0.75] {
-            let t = max(2, (duration.isFinite ? duration : 90) * f)
-            if let (img, _) = try? await gen.image(at: CMTime(seconds: t, preferredTimescale: 600)) {
-                let b = barFraction(img)
-                if b < 0.3 { bars.append(b) }
-            }
-        }
-        guard !bars.isEmpty else { return nil }
-        let sorted = bars.sorted()
-        return Letterbox(size: size, bar: sorted[sorted.count / 2])
-    }
-
-    /// The share of rows at the top and bottom that are (nearly) black; the smaller side counts.
-    private static func barFraction(_ img: CGImage) -> CGFloat {
-        let w = img.width, h = img.height
-        guard w > 0, h > 0, let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w,
-                                                 space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue),
-              let data = { ctx.draw(img, in: CGRect(x: 0, y: 0, width: w, height: h)); return ctx.data }() else { return 0 }
-        let px = data.bindMemory(to: UInt8.self, capacity: w * h)
+    /// The share of rows at the top and bottom that are (nearly) black in one BGRA frame; the smaller side
+    /// counts. Nil when the whole frame is dark (a fade), which says nothing about bars.
+    static func barFraction(_ buf: CVPixelBuffer) -> CGFloat? {
+        CVPixelBufferLockBaseAddress(buf, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(buf, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(buf) else { return nil }
+        let w = CVPixelBufferGetWidth(buf), h = CVPixelBufferGetHeight(buf), stride = CVPixelBufferGetBytesPerRow(buf)
+        guard w > 0, h > 0 else { return nil }
+        let px = base.assumingMemoryBound(to: UInt8.self)
         func dark(_ row: Int) -> Bool {
-            var sum = 0, peak = 0
-            for x in 0 ..< w { let v = Int(px[row * w + x]); sum += v; peak = max(peak, v) }
-            return sum / w < 18 && peak < 48
+            var sum = 0, peak = 0, n = 0
+            var x = 0
+            while x < w {
+                let p = row * stride + x * 4
+                let y = (Int(px[p + 2]) * 3 + Int(px[p + 1]) * 6 + Int(px[p])) / 10
+                sum += y; peak = max(peak, y); n += 1
+                x += 8
+            }
+            // Video black is often 16 (limited range) plus compression noise.
+            return sum / max(n, 1) < 30 && peak < 60
         }
         var top = 0
         while top < h / 3, dark(top) { top += 1 }
         var bottom = 0
         while bottom < h / 3, dark(h - 1 - bottom) { bottom += 1 }
+        if top >= h / 3 && bottom >= h / 3 { return nil }
         return CGFloat(min(top, bottom)) / CGFloat(h)
     }
 }

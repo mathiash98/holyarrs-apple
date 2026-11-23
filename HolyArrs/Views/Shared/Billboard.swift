@@ -32,6 +32,8 @@ struct Billboard<Actions: View>: View {
     var footer: AnyView? = nil
     /// Room under the text and buttons (more when a row of cards sits over the bottom of the picture).
     var contentBottom: CGFloat = 110
+    /// The mute / unmute button next to the actions while a trailer plays.
+    var muteButton = true
     @ViewBuilder var actions: () -> Actions
 
     /// Trailers play with sound unless "Play previews muted" is on in Settings.
@@ -94,7 +96,7 @@ struct Billboard<Actions: View>: View {
                 }
                 FlowLayout(spacing: 14, lineSpacing: 12) {
                     actions()
-                    if playing {
+                    if playing && muteButton {
                         Button { muted.toggle() } label: {
                             Image(systemName: muted ? "speaker.slash.fill" : "speaker.wave.2.fill")
                         }

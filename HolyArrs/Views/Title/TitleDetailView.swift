@@ -41,6 +41,10 @@ struct TitleDetailView: View {
     @State private var starting = false
     /// A movie ask or its removal is being sent (one click asks, a second click takes the ask back).
     @State private var asking = false
+    /// The page's main button (Play, or Ask / Asked) is selected when the page opens.
+    enum MainButton: Hashable { case play, ask }
+    @FocusState private var mainFocus: MainButton?
+    @State private var openedAt = Date()
 
     var body: some View {
         LoadView(state: state, retry: load) { m in
@@ -99,6 +103,12 @@ struct TitleDetailView: View {
         #endif
         .task { if state.value == nil { await load() } }
         .task(id: state.value?.titleID) { await watchDownloads() }
+        // Select Play (it can show up a moment later, once Jellyfin answers) or else Ask, while the page is new.
+        .task(id: mainButton) {
+            guard let b = mainButton, Date().timeIntervalSince(openedAt) < 6 else { return }
+            try? await Task.sleep(for: .milliseconds(150))
+            mainFocus = b
+        }
     }
 
     private func seasons(_ m: Model) -> [TitleMeta.Season] {
@@ -164,6 +174,7 @@ struct TitleDetailView: View {
                 }
                 .primaryAction()
                 .disabled(starting)
+                .focused($mainFocus, equals: .play)
                 if target.resumeSeconds != nil {
                     Button {
                         Task { await play(target, resume: false) }
@@ -200,6 +211,7 @@ struct TitleDetailView: View {
                 }
                 .secondaryAction()
                 .disabled(asking)
+                .focused($mainFocus, equals: .ask)
             } else if canAsk(m) {
                 // One click asks for the movie, or for every season of a show.
                 Button {
@@ -207,8 +219,9 @@ struct TitleDetailView: View {
                 } label: {
                     Label("Ask", systemImage: "plus")
                 }
-                .secondaryAction()
+                .primaryAction()
                 .disabled(asking || !mayAsk)
+                .focused($mainFocus, equals: .ask)
             }
             if m.kind == "show", m.tmdb != nil, m.meta?.never_add != true {
                 Button {
@@ -228,6 +241,13 @@ struct TitleDetailView: View {
                 .secondaryAction()
             }
         }
+    }
+
+    private var mainButton: MainButton? {
+        guard let m = state.value else { return nil }
+        if m.playTarget != nil { return .play }
+        if myMovieAsk(m) != nil || canAsk(m) { return .ask }
+        return nil
     }
 
     private var mayAsk: Bool { app.me?.can("ask") == true || app.me?.isOwner == true }

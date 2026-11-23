@@ -35,16 +35,16 @@ extension HeroSlide {
 }
 
 /// The top billboard with its "Featured" row right under it, like Netflix: moving focus along the row
-/// switches the billboard to that title and starts its trailer; clicking a tile opens the title. When the row
+/// switches the billboard to that title and starts its trailer; clicking a tile opens the title. The billboard
+/// itself has no buttons. When the row
 /// does not have focus, the billboard moves on to the next title every 25 seconds.
-struct BillboardCarousel<Actions: View>: View {
+struct BillboardCarousel: View {
     let slides: [HeroSlide]
     var height: CGFloat = BillboardMetrics.height
     var rowTitle = "Featured"
     /// Called when the Featured row gets focus, so the page can stay scrolled to the top (the trailer stays
     /// full screen behind the row instead of being pushed up).
     var onRowFocus: (() -> Void)? = nil
-    @ViewBuilder var actions: (HeroSlide) -> Actions
 
     @State private var index = 0
     /// Bumped by a manual change, so the auto-advance timer starts over.
@@ -55,8 +55,9 @@ struct BillboardCarousel<Actions: View>: View {
         if !slides.isEmpty {
             let s = slides[min(index, slides.count - 1)]
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
-                Billboard(content: s.content, height: heroHeight, contentBottom: textBottom) {
-                    actions(s)
+                // No buttons: clicking a Featured tile opens the title, where Play or Ask is already selected.
+                Billboard(content: s.content, height: heroHeight, contentBottom: textBottom, muteButton: false) {
+                    EmptyView()
                 }
                 .ignoresSafeArea(edges: .top)
                 .padding(.bottom, -overlap)
@@ -97,7 +98,7 @@ struct BillboardCarousel<Actions: View>: View {
     #if os(tvOS)
     private var heroHeight: CGFloat { slides.count > 1 ? BillboardMetrics.fullScreen : height }
     private var overlap: CGFloat { slides.count > 1 ? 350 : 90 }
-    private var textBottom: CGFloat { slides.count > 1 ? 390 : 110 }
+    private var textBottom: CGFloat { slides.count > 1 ? 380 : 110 }
     #else
     private var heroHeight: CGFloat { height }
     private var overlap: CGFloat { 90 }

@@ -26,14 +26,7 @@ struct ExploreView: View {
                 if let hero = head.value?.hero, !hero.isEmpty {
                     // The billboard follows the Featured row: focus a tile and its trailer plays up top.
                     BillboardCarousel(slides: hero.filter { !HeroSlide.looksLikeSpam($0.displayName) }.map { HeroSlide(item: $0) },
-                                      onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } }) { s in
-                        if s.inLibrary {
-                            LibraryPlayButton(kind: s.kind, tmdb: s.tmdb, titleID: s.titleID)
-                        } else {
-                            AskToggleButton(kind: s.kind, tmdb: s.tmdb, name: s.name, initial: s.ask)
-                        }
-                        if let r = s.route { InfoButton(route: r) }
-                    }
+                                      onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } })
                     .id(kind)
                 }
                 HStack(spacing: 20) {

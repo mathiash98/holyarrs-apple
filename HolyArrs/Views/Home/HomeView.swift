@@ -81,14 +81,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func billboard(_ d: Data) -> some View {
-        BillboardCarousel(slides: d.slides, onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } }) { s in
-            if s.inLibrary {
-                LibraryPlayButton(kind: s.kind, tmdb: s.tmdb, titleID: s.titleID)
-            } else {
-                AskToggleButton(kind: s.kind, tmdb: s.tmdb, name: s.name, initial: s.ask)
-            }
-            if let r = s.route { InfoButton(route: r) }
-        }
+        BillboardCarousel(slides: d.slides, onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } })
     }
 
     // MARK: Rows
