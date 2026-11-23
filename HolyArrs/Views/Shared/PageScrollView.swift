@@ -31,6 +31,17 @@ struct PageScrollView<Content: View>: View {
             .scrollPosition(position ?? $own)
             .onScrollGeometryChange(for: CGPoint.self, of: { $0.contentOffset }) { _, new in offset = new }
             .simultaneousGesture(pointerDrag)
+        #elseif os(tvOS)
+        // Each sideways row is a focus section: pressing up or down from any card reaches the next row,
+        // even when no card sits straight above or below.
+        Group {
+            if let position {
+                ScrollView(axes) { content() }.scrollPosition(position)
+            } else {
+                ScrollView(axes) { content() }
+            }
+        }
+        .modifier(RowFocusSection(on: axes == .horizontal))
         #else
         if let position {
             ScrollView(axes) { content() }.scrollPosition(position)
@@ -69,3 +80,12 @@ struct PageScrollView<Content: View>: View {
     }
     #endif
 }
+
+#if os(tvOS)
+private struct RowFocusSection: ViewModifier {
+    let on: Bool
+    func body(content: Content) -> some View {
+        if on { content.focusSection() } else { content }
+    }
+}
+#endif

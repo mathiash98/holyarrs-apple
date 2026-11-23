@@ -96,6 +96,11 @@ struct Billboard<Actions: View>: View {
                     }
                 }
                 .padding(.top, 6)
+                #if os(tvOS)
+                // Full width, so pressing up from any card in the row below lands on these buttons.
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .focusSection()
+                #endif
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Metrics.gutter)
@@ -199,6 +204,10 @@ extension View {
 }
 
 enum BillboardMetrics {
+    #if os(tvOS)
+    /// The whole TV screen (title pages).
+    static var fullScreen: CGFloat { UIScreen.main.bounds.height }
+    #endif
     static var height: CGFloat {
         #if os(tvOS)
         760

@@ -39,6 +39,8 @@ struct TitleDetailView: View {
     /// Active downloads for this title, refreshed while any are running.
     @State private var downloads: [DownloadRow] = []
     @State private var starting = false
+    /// A movie ask or its removal is being sent (one click asks, a second click takes the ask back).
+    @State private var asking = false
 
     var body: some View {
         LoadView(state: state, retry: load) { m in
@@ -67,6 +69,10 @@ struct TitleDetailView: View {
                 }
                 .padding(.bottom, 60)
             }
+            #if os(tvOS)
+            // Start the page at the very top of the screen (no room kept for the hidden tab bar).
+            .ignoresSafeArea(edges: .top)
+            #endif
             .sheet(isPresented: $showConnect) {
                 JellyfinConnectSheet {
                     showConnect = false
@@ -87,6 +93,10 @@ struct TitleDetailView: View {
         #if os(visionOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        #if os(tvOS)
+        // Netflix-style: the picture or trailer fills the screen, so the tab bar is hidden on title pages.
+        .toolbar(.hidden, for: .tabBar)
+        #endif
         .task { if state.value == nil { await load() } }
         .task(id: state.value?.titleID) { await watchDownloads() }
     }
@@ -104,11 +114,32 @@ struct TitleDetailView: View {
                                             logo: m.meta?.logo ?? m.lib?.logo, backdrop: m.meta?.backdrop ?? m.lib?.backdrop,
                                             tagline: m.meta?.tagline, meta: [metaLine(m)], pills: pills(m), downloads: downloads,
                                             overview: m.meta?.overview ?? m.lib?.overview),
-                  height: BillboardMetrics.height + 60, overviewLines: 6) {
+                  height: headerHeight, overviewLines: overviewLines) {
             actions(m)
         }
+        #if os(tvOS)
+        .ignoresSafeArea()
+        #else
         .ignoresSafeArea(edges: .top)
+        #endif
         .padding(.bottom, -70)
+    }
+
+    /// Full screen on Apple TV (the trailer plays behind the text, like Netflix); a tall hero elsewhere.
+    private var headerHeight: CGFloat {
+        #if os(tvOS)
+        BillboardMetrics.fullScreen
+        #else
+        BillboardMetrics.height + 60
+        #endif
+    }
+
+    private var overviewLines: Int {
+        #if os(tvOS)
+        4
+        #else
+        6
+        #endif
     }
 
     private func metaLine(_ m: Model) -> String {
@@ -160,14 +191,23 @@ struct TitleDetailView: View {
                 }
                 .secondaryAction()
             }
-            if canAsk(m) {
+            if let mine = myMovieAsk(m) {
+                // One click takes the ask back.
                 Button {
-                    showAsk = true
+                    Task { await removeAsk(mine) }
+                } label: {
+                    Label("Asked", systemImage: "checkmark.circle.fill")
+                }
+                .secondaryAction()
+                .disabled(asking)
+            } else if canAsk(m) {
+                Button {
+                    if m.kind == "movie" { Task { await askMovie(m) } } else { showAsk = true }
                 } label: {
                     Label(m.inLibrary ? "Ask for more" : "Ask", systemImage: "plus.circle.fill")
                 }
                 .secondaryAction()
-                .disabled(app.me?.can("ask") != true && app.me?.isOwner != true)
+                .disabled(asking || (app.me?.can("ask") != true && app.me?.isOwner != true))
             }
             if let key = m.meta?.trailerKey {
                 Button {
@@ -177,6 +217,43 @@ struct TitleDetailView: View {
                 }
                 .secondaryAction()
             }
+        }
+    }
+
+    /// My own waiting or approved ask for a movie that is not on disk yet (shown as a toggled "Asked" button).
+    private func myMovieAsk(_ m: Model) -> AskBrief? {
+        guard m.kind == "movie", m.lib?.hasFiles != true, let a = m.ask, a.mine == true, a.id != nil,
+              a.state == "asked" || a.state == "approved" else { return nil }
+        return a
+    }
+
+    /// Asks for a movie straight away; there is nothing to choose, so no sheet.
+    private func askMovie(_ m: Model) async {
+        guard let c = app.client, let tmdb = m.tmdb else { return }
+        asking = true
+        defer { asking = false }
+        do {
+            let _: AskAnswer = try await c.post("/asks", body: AskBody(id: "tmdb:\(tmdb)", kind: "movie"))
+            await load()
+        } catch {
+            actionError = "Could not ask for \(m.name): \(error.localizedDescription)"
+        }
+    }
+
+    /// Takes my ask back, the same way as the Requests page: a waiting ask through /asks/remove, any other by id.
+    private func removeAsk(_ a: AskBrief) async {
+        guard let c = app.client, let id = a.id else { return }
+        asking = true
+        defer { asking = false }
+        do {
+            if a.state == "asked" {
+                try await c.post("/asks/remove", body: RemoveAsksBody(ids: [id]))
+            } else {
+                try await c.delete("/asks/\(id)")
+            }
+            await load()
+        } catch {
+            actionError = "Could not take the ask back: \(error.localizedDescription)"
         }
     }
 
