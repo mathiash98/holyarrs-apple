@@ -17,11 +17,11 @@ Not affiliated with the HolyArrs project.
 
 ## Features
 
-- **Home**: a featured billboard (a recent arrival with its logo, headline, overview, rating and a muted trailer preview), then rows of landscape logo tiles: Continue Watching and Next Up with progress bars (one click plays), New in your library, Trending Now, New seasons, Following and Coming soon, plus your requests, approvals and library totals.
+- **Home**: a featured billboard with a **Featured** row under it: recent arrivals and new seasons mixed with Explore recommendations you do not have yet, movies and shows taking turns (up to 12). Moving along the row switches the billboard to that title (logo, year, runtime, ★ rating, overview) and plays its trailer; clicking a tile opens the title. Then rows of landscape logo tiles: Continue Watching and Next Up with progress bars (one click plays), New in your library, Trending Now, New seasons, Following and Coming soon, plus your requests, approvals and library totals.
 - **Library**: Continue watching and Next up from Jellyfin (one click plays), then every movie and show in HolyArrs with sort and filter. 4K / FHD / HD / SD marks on everything you have.
-- **Explore**: a full-bleed billboard with a muted trailer preview, your personal rows, browse by genre and category, and New & Popular with top-10 rows.
-- **Search**: your library first, then TMDB movies, shows and people.
-- **Title pages**: trailer billboard, live download status (progress, speed, time left) for titles not in the library yet, status pills (quality, HDR, codec, source), Play / Resume (or the next episode), Swiftfin hand-off, trailer with sound, file quality (resolution, HDR, codec), seasons with per-episode play and progress, cast, collection and similar titles. Ask for a movie or a show (whole show, chosen seasons, or new episodes only).
+- **Explore**: the same billboard with its Featured row, your personal rows, browse by genre and category, and New & Popular with top-10 rows.
+- **Search**: your library first, then TMDB movies, shows and people. The system search keyboard, with dictation on Apple TV.
+- **Title pages**: trailer billboard, live download status (progress, speed, time left) for titles not in the library yet, status pills (quality, HDR, codec, source), Play / Resume (or the next episode), selected when the page opens; Swiftfin hand-off, trailer with sound, file quality (resolution, HDR, codec), seasons with per-episode play and progress, cast, collection and similar titles. **Ask** works like a My List button: one click asks for the movie or every season of a show, the button then shows the ask's status (and download progress inside it), and a second click takes the ask back. **Choose seasons** asks for only some seasons.
 - **People**: biography, known for, what is in your library, filmography.
 - **Requests**: filter by state, approve, turn down with a note, remove.
 - **Downloads**: live list (refreshes every 3 seconds while visible) with progress, speed and ETA; pause, resume, remove; Decide (needs a decision, confirm match), History and Turned down.
@@ -33,13 +33,13 @@ Not affiliated with the HolyArrs project.
 
 - Cinema-dark look with HolyArrs red as the accent.
 - Ambient backdrop: a blurred, tinted picture of the current title behind every page (it follows focus on Apple TV).
-- Full-bleed billboards with muted, looping trailer previews (Settings can turn previews off).
-- Rows of landscape tiles with title logos, 4K / FHD / HD / SD marks and status badges.
+- Full-bleed billboards with trailer previews: with sound unless Settings › Play previews muted is on (previews can also be turned off). Each trailer plays once, then the picture stays; it pauses when the page scrolls on, continues on the title page instead of starting over, and baked-in black bars are cropped away.
+- Rows of landscape tiles with title logos, 4K / FHD / HD / SD marks and a status symbol on every cover: ↓ downloaded, ↓ outline in the library but not downloaded yet, ✓ asked, ⊕ not in the library.
 
 ### Platform design
 
 - **visionOS**: tab ornament, a custom dark window, gaze highlight on every card and row, row arrows and draggable scroll bars for mouse and trackpad, full-window player that docks in environments.
-- **tvOS**: top tab bar, focus-driven card buttons, large type, the standard tvOS player; the backdrop follows focus.
+- **tvOS**: Netflix-style and edge to edge: the trailer fills the whole screen behind the tab bar with the Featured row along the bottom (focus starts there), title pages are full screen without the tab bar, compact type, neutral grey buttons, round cast cards, every row a focus section, the standard tvOS player; the backdrop follows focus.
 - **iOS / iPadOS**: tab bar on iPhone, sidebar or top tabs on iPad, compact cards on iPhone, full-screen player with Picture in Picture.
 
 ### Playback
