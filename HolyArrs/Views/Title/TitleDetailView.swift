@@ -201,13 +201,23 @@ struct TitleDetailView: View {
                 .secondaryAction()
                 .disabled(asking)
             } else if canAsk(m) {
+                // One click asks for the movie, or for every season of a show.
                 Button {
-                    if m.kind == "movie" { Task { await askMovie(m) } } else { showAsk = true }
+                    Task { await askTitle(m) }
                 } label: {
-                    Label(m.kind == "show" && m.inLibrary ? "Ask for more" : "Ask", systemImage: "plus")
+                    Label("Ask", systemImage: "plus")
                 }
                 .secondaryAction()
-                .disabled(asking || (app.me?.can("ask") != true && app.me?.isOwner != true))
+                .disabled(asking || !mayAsk)
+            }
+            if m.kind == "show", m.tmdb != nil, m.meta?.never_add != true {
+                Button {
+                    showAsk = true
+                } label: {
+                    Label("Choose seasons", systemImage: "checklist")
+                }
+                .secondaryAction()
+                .disabled(asking || !mayAsk)
             }
             if let key = m.meta?.trailerKey {
                 Button {
@@ -220,20 +230,22 @@ struct TitleDetailView: View {
         }
     }
 
-    /// My own waiting or approved ask for a movie that is not on disk yet (shown as a toggled "Asked" button).
+    private var mayAsk: Bool { app.me?.can("ask") == true || app.me?.isOwner == true }
+
+    /// My own waiting or approved ask (shown as a toggled "Asked" button): a movie not on disk yet, or a show.
     private func myMovieAsk(_ m: Model) -> AskBrief? {
-        guard m.kind == "movie", m.lib?.hasFiles != true, let a = m.ask, a.mine == true, a.id != nil,
+        guard m.kind == "show" || m.lib?.hasFiles != true, let a = m.ask, a.mine == true, a.id != nil,
               a.state == "asked" || a.state == "approved" else { return nil }
         return a
     }
 
-    /// Asks for a movie straight away; there is nothing to choose, so no sheet.
-    private func askMovie(_ m: Model) async {
+    /// Asks straight away: the movie, or every season of a show (Choose seasons is the other way).
+    private func askTitle(_ m: Model) async {
         guard let c = app.client, let tmdb = m.tmdb else { return }
         asking = true
         defer { asking = false }
         do {
-            let _: AskAnswer = try await c.post("/asks", body: AskBody(id: "tmdb:\(tmdb)", kind: "movie"))
+            let _: AskAnswer = try await c.post("/asks", body: AskBody(id: "tmdb:\(tmdb)", kind: m.kind))
             await load()
         } catch {
             actionError = "Could not ask for \(m.name): \(error.localizedDescription)"
@@ -271,7 +283,7 @@ struct TitleDetailView: View {
 
     private func canAsk(_ m: Model) -> Bool {
         guard m.tmdb != nil, m.meta?.never_add != true else { return false }
-        if let a = m.ask, a.mine == true, a.state == "asked" || a.state == "approved" { return m.kind == "show" }
+        if let a = m.ask, a.mine == true, a.state == "asked" || a.state == "approved" { return false }
         // A movie can be asked for until it is on disk (also when it is wanted in the library without an ask).
         if m.kind == "movie" { return m.lib?.hasFiles != true }
         return true

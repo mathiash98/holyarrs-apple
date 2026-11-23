@@ -27,12 +27,10 @@ struct ExploreView: View {
                     BillboardCarousel(slides: hero.filter { !HeroSlide.looksLikeSpam($0.displayName) }.map { HeroSlide(item: $0) }) { s in
                         if s.inLibrary {
                             LibraryPlayButton(kind: s.kind, tmdb: s.tmdb, titleID: s.titleID)
+                        } else {
+                            AskToggleButton(kind: s.kind, tmdb: s.tmdb, name: s.name, initial: s.ask)
                         }
-                        TrailerButton(kind: s.kind, tmdb: s.tmdb, name: s.name)
-                        if let r = s.route {
-                            NavigationLink(value: r) { Label("More info", systemImage: "info.circle") }
-                                .secondaryAction()
-                        }
+                        if let r = s.route { InfoButton(route: r) }
                     }
                     .id(kind)
                 }

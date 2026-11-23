@@ -11,6 +11,8 @@ struct HeroSlide: Identifiable {
     var titleID: Int?
     var name: String
     var route: Route?
+    /// The ask on a title that is not in the library (for the Ask / Asked button).
+    var ask: AskBrief? = nil
 }
 
 extension HeroSlide {
@@ -28,7 +30,7 @@ extension HeroSlide {
             headline: headline ?? (have ? nil : "Not in your library yet"),
             meta: [m.year.map(String.init), m.kind == "show" ? "Series" : "Movie", m.fresh?.text].compactMap { $0 },
             overview: m.overview, route: m.route),
-            inLibrary: have, kind: m.kind, tmdb: m.tmdbID, titleID: m.title_id, name: m.displayName, route: m.route)
+            inLibrary: have, kind: m.kind, tmdb: m.tmdbID, titleID: m.title_id, name: m.displayName, route: m.route, ask: m.ask)
     }
 }
 

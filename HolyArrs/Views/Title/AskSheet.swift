@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Ask for a movie, or for a show with a season choice. Sends POST /asks.
+/// Choose seasons of a show and ask for them (asking for the whole show is one click on the title page).
+/// Sends POST /asks.
 struct AskSheet: View {
     @Environment(AppModel.self) private var app
     let kind: String
@@ -11,33 +12,6 @@ struct AskSheet: View {
     let seasons: [TitleMeta.Season]
     let done: (Bool) -> Void
 
-    enum Scope: String, CaseIterable, Identifiable {
-        case whole, pick, future
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .whole: "Whole show"
-            case .pick: "Choose seasons"
-            case .future: "New episodes"
-            }
-        }
-        var detail: String {
-            switch self {
-            case .whole: "Every season, kept up to date"
-            case .pick: "Only the seasons you pick"
-            case .future: "Episodes that air from now on"
-            }
-        }
-        var icon: String {
-            switch self {
-            case .whole: "square.stack.3d.up.fill"
-            case .pick: "checklist"
-            case .future: "calendar.badge.clock"
-            }
-        }
-    }
-
-    @State private var scope: Scope = .whole
     @State private var picked: Set<Int> = []
     @State private var busy = false
     @State private var error: String?
@@ -45,13 +19,7 @@ struct AskSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: spacing) {
             header
-            if kind == "show" {
-                scopeCards
-                if scope == .pick { seasonGrid }
-            } else {
-                Text("HolyArrs looks for this movie once the request is approved.")
-                    .font(.xBody).foregroundStyle(.secondary)
-            }
+            seasonGrid
             if let error {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.xCallout).foregroundStyle(.yellow)
@@ -61,8 +29,7 @@ struct AskSheet: View {
         }
         .padding(outerPadding)
         #if os(visionOS)
-        .frame(width: 760, height: kind == "show" ? (scope == .pick ? 660 : 400) : 300)
-        .animation(.smooth, value: scope)
+        .frame(width: 760, height: 560)
         #else
         .frame(maxWidth: 1300)
         #endif
@@ -79,40 +46,12 @@ struct AskSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("Ask for").font(.xCallout).foregroundStyle(.secondary)
+                Text("Choose seasons").font(.xCallout).foregroundStyle(.secondary)
                 Text(name).font(.xTitle.bold()).lineLimit(2)
                 Text([year.map(String.init), kind == "show" ? "TV show" : "Movie"].compactMap { $0 }.joined(separator: " · "))
                     .font(.xCallout).foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
-        }
-    }
-
-    private var scopeCards: some View {
-        let layout = Metrics.isPhone ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 16))
-        return layout {
-            ForEach(Scope.allCases) { s in
-                Button {
-                    scope = s
-                } label: {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Image(systemName: s.icon).font(.xTitle2)
-                        Text(s.title).font(.xHeadline).lineLimit(2).minimumScaleFactor(0.8)
-                        Text(s.detail).font(.xCaption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: cardHeight, alignment: .topLeading)
-                    .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(scope == s ? Color.accentColor.opacity(0.35) : Color.white.opacity(0.06))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .strokeBorder(scope == s ? Color.accentColor : .clear, lineWidth: 2)
-                    )
-                }
-                .rowButton(corner: 18)
-            }
         }
     }
 
@@ -125,6 +64,7 @@ struct AskSheet: View {
                     picked = picked.count == seasons.count ? [] : Set(seasons.map(\.number))
                 }
                 .font(.xCallout)
+                .secondaryAction()
             }
             PageScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: chipWidth), spacing: 12)], spacing: 12) {
@@ -152,14 +92,14 @@ struct AskSheet: View {
                 }
                 .padding(4)
             }
-            .frame(maxHeight: 260)
+            .frame(maxHeight: 380)
         }
     }
 
     private var footer: some View {
         HStack(spacing: 16) {
             Button("Cancel", role: .cancel) { done(false) }
-                .buttonStyle(.bordered)
+                .secondaryAction()
             Spacer()
             Button {
                 Task { await send() }
@@ -170,18 +110,13 @@ struct AskSheet: View {
                 }
                 .padding(.horizontal, 12)
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(busy || (kind == "show" && scope == .pick && picked.isEmpty))
+            .primaryAction()
+            .disabled(busy || picked.isEmpty)
         }
     }
 
     private var askLabel: String {
-        guard kind == "show" else { return "Ask" }
-        switch scope {
-        case .whole: return "Ask for all seasons"
-        case .future: return "Ask for new episodes"
-        case .pick: return picked.isEmpty ? "Pick seasons" : "Ask for \(picked.count) season\(picked.count == 1 ? "" : "s")"
-        }
+        picked.isEmpty ? "Pick seasons" : "Ask for \(picked.count) season\(picked.count == 1 ? "" : "s")"
     }
 
     // MARK: Sizes
@@ -207,13 +142,6 @@ struct AskSheet: View {
         72
         #endif
     }
-    private var cardHeight: CGFloat {
-        #if os(tvOS)
-        150
-        #else
-        96
-        #endif
-    }
     private var chipWidth: CGFloat {
         #if os(tvOS)
         280
@@ -227,13 +155,7 @@ struct AskSheet: View {
         busy = true
         defer { busy = false }
         var body = AskBody(id: "tmdb:\(tmdb)", kind: kind)
-        if kind == "show" {
-            switch scope {
-            case .whole: break
-            case .pick: body.seasons = picked.sorted()
-            case .future: body.future_only = true
-            }
-        }
+        body.seasons = picked.sorted()
         do {
             let _: AskAnswer = try await c.post("/asks", body: body)
             done(true)

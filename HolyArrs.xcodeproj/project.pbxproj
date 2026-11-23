@@ -34,6 +34,7 @@
 		A2CC343E51ADF7E7DA64B2E1 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836D496C57E0BBF83510DAC2 /* AppModel.swift */; };
 		A41F74E80B40CDC6C85D6E36 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D0EF0BCD6166050E129BFD /* Common.swift */; };
 		A59A9A048829194CC7B2761E /* AskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03FD8969A677E546471530F2 /* AskSheet.swift */; };
+		A6487808CB230E3BF22D8C0D /* AskToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4529852CFB7CF1CC7A4EC95 /* AskToggleButton.swift */; };
 		A932B93A4D1FC2A39D982138 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DCE090A27DB17FF1AB4E770 /* CalendarView.swift */; };
 		B30DEC6F2683D5C6578EDD5F /* Jellyfin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D5C65B0E32DEB126091FC03 /* Jellyfin.swift */; };
 		B36957727B211CBDA340821A /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0478F3F09927F32DF36BCD21 /* ImageLoader.swift */; };
@@ -95,6 +96,7 @@
 		B5D0EF0BCD6166050E129BFD /* Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
 		B8C9DD6AE4BA4A59100A306C /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		C1CC50E4EB804AE69612DEA2 /* PopularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopularView.swift; sourceTree = "<group>"; };
+		C4529852CFB7CF1CC7A4EC95 /* AskToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskToggleButton.swift; sourceTree = "<group>"; };
 		C47BFD2011FB5B6DB0794588 /* TitleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleDetailView.swift; sourceTree = "<group>"; };
 		C4E05D5E6F7AA7384DC07CAD /* DownloadsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadsView.swift; sourceTree = "<group>"; };
 		C8E66823BD85ACA9888BF549 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -291,6 +293,7 @@
 			children = (
 				0B488BE27AC7E9E4E90FC5E5 /* Ambient.swift */,
 				33A97506D9A341348DB370D0 /* AppFonts.swift */,
+				C4529852CFB7CF1CC7A4EC95 /* AskToggleButton.swift */,
 				539AF0C42B563F526A3DCCE4 /* Billboard.swift */,
 				537EDF77AD4580EDA1B699E9 /* BillboardCarousel.swift */,
 				7C198E17F04A8DCB61F7DAA3 /* Cards.swift */,
@@ -411,6 +414,7 @@
 				27C9A3B8680DC41D80D80012 /* AppFonts.swift in Sources */,
 				A2CC343E51ADF7E7DA64B2E1 /* AppModel.swift in Sources */,
 				A59A9A048829194CC7B2761E /* AskSheet.swift in Sources */,
+				A6487808CB230E3BF22D8C0D /* AskToggleButton.swift in Sources */,
 				D960A96C8B32D529AC4D4EB0 /* Billboard.swift in Sources */,
 				0F6A2BD028270AF30580E380 /* BillboardCarousel.swift in Sources */,
 				A932B93A4D1FC2A39D982138 /* CalendarView.swift in Sources */,
