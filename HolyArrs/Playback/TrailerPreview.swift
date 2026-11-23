@@ -2,8 +2,9 @@ import AVFoundation
 import SwiftUI
 import UIKit
 
-/// A looping trailer preview behind a billboard. Starts after a short pause so scrolling
-/// past does not start streams, stops when it leaves the screen, and only uses trailers HolyArrs already resolved.
+/// A trailer preview behind a billboard. Starts after a short pause so scrolling past does not start streams,
+/// plays each trailer once (then fades back to the picture; it does not start again this session), pauses while
+/// `paused` is set, and only uses trailers HolyArrs already resolved.
 struct TrailerPreview: View {
     @Environment(AppModel.self) private var app
     @AppStorage("autoplayPreviews") private var autoplay = true
@@ -11,6 +12,8 @@ struct TrailerPreview: View {
     let tmdb: String?
     @Binding var muted: Bool
     @Binding var playing: Bool
+    /// Set while the billboard is scrolled away (the page moved on to other rows).
+    var paused = false
 
     @State private var player: AVQueuePlayer?
     /// True while this view counts as a user of the shared player.
@@ -30,53 +33,77 @@ struct TrailerPreview: View {
                 }
                 .clipped()
                 .opacity(playing ? 1 : 0)
-                .animation(.easeIn(duration: 0.8), value: playing)
+                .animation(.easeInOut(duration: 0.8), value: playing)
             }
         }
         .allowsHitTesting(false)
         .task(id: "\(key)/\(autoplay)") { await start() }
         .onDisappear { stop() }
         .onChange(of: muted) { _, m in player?.isMuted = m }
+        .onChange(of: paused) { _, p in
+            guard let player, !TrailerPlayers.shared.hasPlayed(key) else { return }
+            if p { player.pause() } else { player.play() }
+        }
     }
 
     private func start() async {
         stop()
         guard autoplay, let kind, let tmdb, kind == "movie" || kind == "show", let c = app.client else { return }
-        // The same title is already playing (for example Home's billboard before "More info"): carry on from
-        // where it is, with its sound setting, instead of starting the trailer again.
+        // Each trailer plays once per session; afterwards the picture stays.
+        guard !TrailerPlayers.shared.hasPlayed(key) else { return }
+        // The same title is already playing (for example Home's billboard before opening the title): carry on
+        // from where it is, with its sound setting, instead of starting the trailer again.
         if let shared = TrailerPlayers.shared.player(for: key) {
             TrailerPlayers.shared.hold()
             holding = true
             muted = shared.isMuted
             box = TrailerPlayers.shared.letterbox
             player = shared
-            shared.play()
+            if !paused { shared.play() }
             var t = Transaction()
             t.disablesAnimations = true
             withTransaction(t) { playing = true }
-            if box == nil { await measureBars(shared) }
+            await follow(shared, measure: box == nil)
             return
         }
         try? await Task.sleep(for: .seconds(1.5))
         if Task.isCancelled { return }
         guard let t: TrailerStream = try? await c.get("/trailer/\(kind)/\(tmdb.q)"), let s = t.url, let url = URL(string: s) else { return }
         if Task.isCancelled { return }
-        let item = AVPlayerItem(url: url)
-        let q = AVQueuePlayer()
+        let q = AVQueuePlayer(items: [AVPlayerItem(url: url)])
         q.isMuted = muted
-        let looper = AVPlayerLooper(player: q, templateItem: item)
-        TrailerPlayers.shared.adopt(key, player: q, looper: looper, url: url)
+        q.actionAtItemEnd = .pause
+        TrailerPlayers.shared.adopt(key, player: q)
         TrailerPlayers.shared.hold()
         holding = true
         player = q
-        q.play()
+        if !paused { q.play() }
         // Wait for the first frames before fading in.
         for _ in 0 ..< 40 {
             if Task.isCancelled { return }
             if q.timeControlStatus == .playing && q.currentTime().seconds > 0.3 { playing = true; break }
             try? await Task.sleep(for: .milliseconds(250))
         }
-        await measureBars(q)
+        await follow(q, measure: true)
+    }
+
+    /// Measures the black bars and waits for the end; then fades back to the picture and marks it played.
+    private func follow(_ q: AVQueuePlayer, measure: Bool) async {
+        guard let item = q.currentItem else { return }
+        await withTaskGroup(of: Bool.self) { g in
+            if measure { g.addTask { await measureBars(q); return false } }
+            g.addTask {
+                for await _ in NotificationCenter.default.notifications(named: AVPlayerItem.didPlayToEndTimeNotification, object: item) { break }
+                return true
+            }
+            // The end of the trailer is what counts; measuring stops with it.
+            while let ended = await g.next() {
+                if ended { g.cancelAll(); break }
+            }
+        }
+        if Task.isCancelled { return }
+        TrailerPlayers.shared.markPlayed(key)
+        playing = false
     }
 
     /// Reads frames as they play (the trailers are HLS streams, which cannot be opened a second time for
@@ -122,27 +149,33 @@ final class TrailerPlayers {
     static let shared = TrailerPlayers()
     private var key: String?
     private var current: AVQueuePlayer?
-    private var looper: AVPlayerLooper?
     private var holders = 0
     private var pauseTask: Task<Void, Never>?
     private(set) var letterbox: Letterbox?
+    /// Trailers that played to the end this session (they are not started again).
+    private var played: Set<String> = []
 
     func setLetterbox(_ l: Letterbox?, for key: String) { if self.key == key { letterbox = l } }
+    func hasPlayed(_ key: String) -> Bool { played.contains(key) }
+    func markPlayed(_ key: String) {
+        played.insert(key)
+        if self.key == key { current?.pause() }
+    }
+    /// A trailer is on screen and still running (the slider waits for it before moving on).
+    func isRunning(_ key: String) -> Bool {
+        self.key == key && !played.contains(key) && holders > 0 && current?.timeControlStatus != .paused
+    }
 
     func player(for key: String) -> AVQueuePlayer? { self.key == key ? current : nil }
 
     /// Takes over a new trailer; the previous one is stopped for good.
-    private(set) var url: URL?
-
-    func adopt(_ key: String, player: AVQueuePlayer, looper: AVPlayerLooper, url: URL) {
+    func adopt(_ key: String, player: AVQueuePlayer) {
         if let old = current, old !== player {
             old.pause()
             old.removeAllItems()
         }
         self.key = key
         current = player
-        self.looper = looper
-        self.url = url
         letterbox = nil
         holders = 0
     }

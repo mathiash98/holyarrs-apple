@@ -19,13 +19,15 @@ struct ExploreView: View {
     @State private var browse: BrowseAnswer?
     @State private var sectionTiles: [String: [BrowseTile]] = [:]
     @State private var page = ScrollPosition(edge: .top)
+    /// The billboard is on screen (the trailer pauses once the page scrolls on to other rows).
+    @State private var heroVisible = true
 
     var body: some View {
         PageScrollView(position: $page) {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 if let hero = head.value?.hero, !hero.isEmpty {
                     // The billboard follows the Featured row: focus a tile and its trailer plays up top.
-                    BillboardCarousel(slides: hero.filter { !HeroSlide.looksLikeSpam($0.displayName) }.map { HeroSlide(item: $0) },
+                    BillboardCarousel(slides: HeroSlide.mix(hero + (head.value?.head ?? []).flatMap { $0.items ?? [] }, limit: 12).map { HeroSlide(item: $0) }, active: heroVisible,
                                       onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } })
                     .id(kind)
                 }
@@ -79,7 +81,10 @@ struct ExploreView: View {
         }
         #if os(tvOS)
         .ignoresSafeArea(edges: .top)
+        // No dark band behind the tab bar while focus is in the page: the trailer runs to the top edge.
+        .scrollEdgeEffectHidden(true, for: .top)
         #endif
+        .onScrollGeometryChange(for: Bool.self, of: { $0.contentOffset.y < 300 }) { _, v in heroVisible = v }
         .task(id: kind) { await loadAll() }
     }
 

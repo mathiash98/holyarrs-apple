@@ -34,6 +34,8 @@ struct Billboard<Actions: View>: View {
     var contentBottom: CGFloat = 110
     /// The mute / unmute button next to the actions while a trailer plays.
     var muteButton = true
+    /// Pause the trailer (the page scrolled on to other rows).
+    var trailerPaused = false
     @ViewBuilder var actions: () -> Actions
 
     /// Trailers play with sound unless "Play previews muted" is on in Settings.
@@ -49,7 +51,7 @@ struct Billboard<Actions: View>: View {
                 .scaleEffect(zoom ? 1.08 : 1.0)
                 .animation(.easeInOut(duration: 24).repeatForever(autoreverses: true), value: zoom)
                 .onAppear { zoom = true }
-            TrailerPreview(kind: content.kind, tmdb: content.tmdb, muted: $muted, playing: $playing)
+            TrailerPreview(kind: content.kind, tmdb: content.tmdb, muted: $muted, playing: $playing, paused: trailerPaused)
             // Fades: dark to the left for text, and down into the page.
             LinearGradient(colors: [.black.opacity(0.85), .black.opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
             LinearGradient(colors: [.clear, .clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)

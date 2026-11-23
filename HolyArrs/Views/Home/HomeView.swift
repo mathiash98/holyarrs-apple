@@ -19,6 +19,8 @@ struct HomeView: View {
     @State private var nextUp: [JFItem] = []
     @State private var actionError: String?
     @State private var page = ScrollPosition(edge: .top)
+    /// The billboard is on screen (the trailer pauses once the page scrolls on to other rows).
+    @State private var heroVisible = true
 
     var body: some View {
         LoadView(state: state, retry: load) { d in
@@ -63,7 +65,10 @@ struct HomeView: View {
             #if os(tvOS)
             // Immersive: the hero runs to the top edge, under the floating tab bar.
             .ignoresSafeArea(edges: .top)
+            // No dark band behind the tab bar while focus is in the page: the trailer runs to the top edge.
+            .scrollEdgeEffectHidden(true, for: .top)
             #endif
+            .onScrollGeometryChange(for: Bool.self, of: { $0.contentOffset.y < 300 }) { _, v in heroVisible = v }
             .refreshable { await load() }
         }
         #if os(visionOS)
@@ -81,7 +86,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func billboard(_ d: Data) -> some View {
-        BillboardCarousel(slides: d.slides, onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } })
+        BillboardCarousel(slides: d.slides, active: heroVisible, onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } })
     }
 
     // MARK: Rows
@@ -92,7 +97,7 @@ struct HomeView: View {
             let key = app.tmdbKey(titleID: c.title_id)
             TileCard(title: c.name ?? "", line: [c.line, c.year.map(String.init)].compactMap { $0 }.joined(separator: " · "),
                      art: c.backdrop ?? c.poster, logo: c.logo, route: c.route,
-                     kind: c.kind, tmdb: key?.tmdb, titleID: c.title_id)
+                     kind: c.kind, tmdb: key?.tmdb, titleID: c.title_id, inLibrary: c.title_id != nil)
         }
     }
 
@@ -154,10 +159,14 @@ struct HomeView: View {
         }
     }
 
-    /// Up to four recent arrivals (with art and a logo, shuffled each visit) alternating with up to four
-    /// recommendations from Explore that are not in the library yet.
+    /// Up to six recent arrivals and new seasons (with art and a logo, shuffled each visit) alternating with up
+    /// to six recommendations from Explore that are not in the library yet; movies and shows mixed.
     private func heroSlides(home h: HomeAnswer, explore: ExploreHead?, client c: APIClient) async -> [HeroSlide] {
-        var picks = Array((h.arrived ?? []).prefix(12).filter { $0.backdrop != nil && $0.logo != nil }.shuffled().prefix(4))
+        let pool = ((h.arrived ?? []) + (h.new_seasons ?? [])).filter { $0.backdrop != nil && $0.logo != nil }
+        var seenLib = Set<Int>()
+        let unique = pool.shuffled().filter { $0.title_id.map { seenLib.insert($0).inserted } ?? true }
+        var picks = Array((unique.filter { $0.kind != "show" }.prefix(3) + unique.filter { $0.kind == "show" }.prefix(3)))
+        if picks.count < 6 { picks += unique.filter { p in !picks.contains { $0.id == p.id } }.prefix(6 - picks.count) }
         if picks.isEmpty, let f = h.arrived?.first ?? h.soon?.first { picks = [f] }
         var titles: [Int: LibraryTitle] = [:]
         await withTaskGroup(of: (Int, LibraryTitle?).self) { g in
@@ -171,15 +180,14 @@ struct HomeView: View {
                 kind: f.kind, tmdb: tmdb, titleID: f.title_id, name: f.name ?? "",
                 logo: f.logo ?? t?.logo, backdrop: f.backdrop ?? t?.backdrop,
                 headline: f.line, rating: t?.rating,
-                meta: [f.year.map(String.init), Fmt.runtime(t?.runtime_minutes), (t?.genres?.names ?? []).prefix(2).joined(separator: " · ")]
+                meta: [f.year.map(String.init), Fmt.runtime(t?.runtime_minutes), HeroSlide.stars(t?.score),
+                       (t?.genres?.names ?? []).prefix(2).joined(separator: " · ")]
                     .compactMap { $0 }.filter { !$0.isEmpty },
                 overview: t?.overview, route: f.route),
                 inLibrary: true, kind: f.kind, tmdb: tmdb, titleID: f.title_id, name: f.name ?? "", route: f.route)
         }
-        let fresh: [HeroSlide] = (explore?.hero ?? [])
-            .filter { $0.in_library != true && $0.title_id == nil && $0.card_logo != nil && ($0.backdrop ?? $0.card_art) != nil }
-            .filter { !HeroSlide.looksLikeSpam($0.displayName) }
-            .prefix(4)
+        let candidates = (explore?.hero ?? []) + (explore?.head ?? []).flatMap { $0.items ?? [] }
+        let fresh: [HeroSlide] = HeroSlide.mix(candidates.filter { $0.in_library != true && $0.title_id == nil }, limit: 6)
             .map { HeroSlide(item: $0) }
         // Alternate: library, new, library, new…
         var out: [HeroSlide] = []

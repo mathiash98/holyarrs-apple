@@ -14,6 +14,9 @@ struct PosterCard: View {
     var titleID: Int? = nil
     /// The wide picture used as the page backdrop while this card is focused.
     var backdrop: String? = nil
+    /// For the corner symbol (downloaded / asked / can ask).
+    var inLibrary: Bool? = nil
+    var ask: AskBrief? = nil
 
     private var shownImage: String? { image ?? app.posterFallback(kind: kind, tmdb: tmdb, titleID: titleID) }
 
@@ -37,6 +40,9 @@ struct PosterCard: View {
                     }
                     if let q = app.quality(kind: kind, tmdb: tmdb, titleID: titleID) {
                         QualityChip(label: q).frame(maxWidth: .infinity, alignment: .topTrailing).padding(8)
+                    }
+                    if let icon = app.statusIcon(kind: kind, tmdb: tmdb, titleID: titleID, inLibrary: inLibrary, ask: ask) {
+                        CornerIcon(name: icon)
                     }
                 }
                 .frame(width: width, height: width * 1.5)
@@ -273,7 +279,7 @@ struct MediaShelf: View {
         } else {
             Shelf(title: title, subtitle: subtitle, items: items) { item in
                 let it = defaultKind.map { item.withKind($0) } ?? item
-                PosterCard(title: it.displayName, subtitle: subtitleFor(it), image: it.poster ?? it.card_art, badge: it.badge, route: it.route, kind: it.kind, tmdb: it.tmdbID, titleID: it.title_id, backdrop: it.backdrop ?? it.card_art)
+                PosterCard(title: it.displayName, subtitle: subtitleFor(it), image: it.poster ?? it.card_art, badge: it.badge, route: it.route, kind: it.kind, tmdb: it.tmdbID, titleID: it.title_id, backdrop: it.backdrop ?? it.card_art, inLibrary: it.in_library, ask: it.ask)
             }
         }
     }
@@ -320,8 +326,14 @@ struct TileCard: View {
     var width: CGFloat = Metrics.wideWidth
     /// Called when the tile gains or loses focus (Apple TV) or the pointer (iPad, Mac).
     var onFocusChange: ((Bool) -> Void)? = nil
-    /// A small status symbol in the bottom-right corner (downloaded, asked, can ask).
+    /// A small status symbol in the bottom-right corner (downloaded, asked, can ask). Worked out from the
+    /// title when not given (not on Jellyfin play tiles, which have an action).
     var cornerIcon: String? = nil
+    var inLibrary: Bool? = nil
+    var ask: AskBrief? = nil
+    /// Lets a parent move focus to this tile (the Featured row selects its first tile on Apple TV).
+    var focusBinding: FocusState<String?>.Binding? = nil
+    var focusID: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -336,6 +348,7 @@ struct TileCard: View {
             .cardButton()
             .ambientOnFocus(ambient ?? art)
             .modifier(FocusReport(action: onFocusChange))
+            .modifier(BoundFocus(binding: focusBinding, id: focusID))
             if let line, !line.isEmpty {
                 Text(line).font(.xCaption).foregroundStyle(.secondary).lineLimit(1).frame(width: width, alignment: .leading)
             }
@@ -372,13 +385,8 @@ struct TileCard: View {
                 Spacer()
             }
             .padding(10)
-            if let cornerIcon {
-                Image(systemName: cornerIcon)
-                    .font(.xHeadline)
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.8), radius: 6)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .padding(12)
+            if let icon = cornerIcon ?? (action == nil ? app.statusIcon(kind: kind, tmdb: tmdb, titleID: titleID, inLibrary: inLibrary, ask: ask) : nil) {
+                CornerIcon(name: icon)
             }
             if let progress {
                 GeometryReader { g in
@@ -403,7 +411,7 @@ struct LogoCard: View {
         TileCard(title: item.displayName, line: line, art: item.card_art ?? item.backdrop ?? item.poster, logo: item.card_logo,
                  badge: item.in_library == true || item.title_id != nil ? nil : (item.ask?.state_label ?? item.ask?.state),
                  route: item.route, kind: item.kind, tmdb: item.tmdbID, titleID: item.title_id,
-                 ambient: item.backdrop ?? item.card_art, width: width)
+                 ambient: item.backdrop ?? item.card_art, width: width, inLibrary: item.in_library, ask: item.ask)
     }
 
     private var line: String? {
@@ -413,5 +421,27 @@ struct LogoCard: View {
         if let y = item.year { p.append(String(y)) }
         if let k = item.kind { p.append(k == "show" ? "Series" : "Movie") }
         return p.isEmpty ? nil : p.joined(separator: " · ")
+    }
+}
+
+/// The white status symbol in a card's bottom-right corner.
+struct CornerIcon: View {
+    let name: String
+    var body: some View {
+        Image(systemName: name)
+            .font(.xHeadline)
+            .foregroundStyle(.white)
+            .shadow(color: .black.opacity(0.85), radius: 6)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            .padding(10)
+    }
+}
+
+/// Binds a card's button to a parent's focus state when one is given.
+struct BoundFocus: ViewModifier {
+    let binding: FocusState<String?>.Binding?
+    let id: String?
+    func body(content: Content) -> some View {
+        if let binding, let id { content.focused(binding, equals: id) } else { content }
     }
 }

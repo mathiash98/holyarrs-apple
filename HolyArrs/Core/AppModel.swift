@@ -156,6 +156,16 @@ final class AppModel {
         return p.count == 2 ? (p[0], p[1]) : nil
     }
 
+    /// The small symbol in a card's corner: on Jellyfin (downloaded), asked by me, in the library but not
+    /// downloaded yet, or not in the library (can be asked for). Nil when the card is not a title.
+    func statusIcon(kind: String?, tmdb: String?, titleID: Int?, inLibrary: Bool?, ask: AskBrief?) -> String? {
+        guard kind != nil || tmdb != nil || titleID != nil else { return nil }
+        if quality(kind: kind, tmdb: tmdb, titleID: titleID) != nil { return "arrow.down.circle.fill" }
+        if let a = ask, a.mine == true, a.state == "asked" || a.state == "approved" { return "checkmark.circle.fill" }
+        if inLibrary == true || titleID != nil { return "arrow.down.circle" }
+        return "plus.circle"
+    }
+
     func quality(kind: String?, tmdb: String?, titleID: Int?) -> String? {
         if let k = kind, let t = tmdb, let q = qualityByKey["\(k):\(t)"] { return q }
         if let id = titleID, let key = keyByTitleID[id] { return qualityByKey[key] }
