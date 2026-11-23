@@ -112,7 +112,7 @@ struct TitleDetailView: View {
     private func header(_ m: Model) -> some View {
         Billboard(content: BillboardContent(kind: m.kind, tmdb: m.tmdb, titleID: m.titleID, name: m.name,
                                             logo: m.meta?.logo ?? m.lib?.logo, backdrop: m.meta?.backdrop ?? m.lib?.backdrop,
-                                            tagline: m.meta?.tagline, meta: [metaLine(m)], pills: pills(m), downloads: downloads,
+                                            tagline: m.meta?.tagline, meta: [metaLine(m)], pills: pills(m), downloads: myMovieAsk(m) == nil ? downloads : [],
                                             overview: m.meta?.overview ?? m.lib?.overview),
                   height: headerHeight, overviewLines: overviewLines) {
             actions(m)
@@ -196,7 +196,7 @@ struct TitleDetailView: View {
                 Button {
                     Task { await removeAsk(mine) }
                 } label: {
-                    Label(askedLabel(mine), systemImage: "checkmark")
+                    AskedLabel(text: askedLabel(mine), progress: downloads.first?.progress)
                 }
                 .secondaryAction()
                 .disabled(asking)
@@ -259,7 +259,12 @@ struct TitleDetailView: View {
 
     /// "Asked", plus where the ask is: waiting for approval, approved, downloading.
     private func askedLabel(_ a: AskBrief) -> String {
-        if !downloads.isEmpty { return "Asked · Downloading" }
+        if let d = downloads.first {
+            var p = ["Downloading", String(format: "%.0f%%", (d.progress ?? 0) * 100)]
+            if let eta = d.eta { p.append("\(Fmt.duration(eta)) left") }
+            if d.state != "downloading" { p[0] = d.label ?? "Waiting" }
+            return p.joined(separator: " · ")
+        }
         let s = a.state_label ?? a.state?.capitalized ?? ""
         return s.isEmpty ? "Asked" : "Asked · \(s)"
     }
@@ -358,10 +363,21 @@ struct TitleDetailView: View {
                 downloads = []
                 return
             }
+            let had = !downloads.isEmpty
             if let a: DownloadsAnswer = try? await c.get("/downloads/view?limit=200") {
                 downloads = (a.downloads ?? []).filter { $0.title_id == lib.id && !$0.isDone }
             }
-            if downloads.isEmpty { return }
+            if had && downloads.isEmpty {
+                // Finished: reload so Play shows up.
+                await load()
+                return
+            }
+            if downloads.isEmpty {
+                // My ask is waiting for a download to start: look again now and then.
+                guard myMovieAsk(m) != nil else { return }
+                try? await Task.sleep(for: .seconds(15))
+                continue
+            }
             try? await Task.sleep(for: .seconds(4))
         }
     }
@@ -586,5 +602,25 @@ struct EpisodeRow: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// The Asked button's label: a check mark and the ask's status, with a thin progress bar while it downloads.
+private struct AskedLabel: View {
+    let text: String
+    let progress: Double?
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark")
+            VStack(alignment: .leading, spacing: 6) {
+                Text(text).lineLimit(1)
+                if let progress {
+                    ProgressView(value: min(max(progress, 0), 1))
+                        .tint(.green)
+                        .frame(width: 220)
+                }
+            }
+        }
     }
 }
