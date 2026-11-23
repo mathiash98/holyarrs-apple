@@ -18,10 +18,11 @@ struct HomeView: View {
     @State private var resume: [JFItem] = []
     @State private var nextUp: [JFItem] = []
     @State private var actionError: String?
+    @State private var page = ScrollPosition(edge: .top)
 
     var body: some View {
         LoadView(state: state, retry: load) { d in
-            PageScrollView {
+            PageScrollView(position: $page) {
                 VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                     billboard(d)
                     ActionErrorBanner(message: $actionError)
@@ -80,7 +81,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func billboard(_ d: Data) -> some View {
-        BillboardCarousel(slides: d.slides) { s in
+        BillboardCarousel(slides: d.slides, onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } }) { s in
             if s.inLibrary {
                 LibraryPlayButton(kind: s.kind, tmdb: s.tmdb, titleID: s.titleID)
             } else {

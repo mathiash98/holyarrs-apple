@@ -41,6 +41,9 @@ struct BillboardCarousel<Actions: View>: View {
     let slides: [HeroSlide]
     var height: CGFloat = BillboardMetrics.height
     var rowTitle = "Featured"
+    /// Called when the Featured row gets focus, so the page can stay scrolled to the top (the trailer stays
+    /// full screen behind the row instead of being pushed up).
+    var onRowFocus: (() -> Void)? = nil
     @ViewBuilder var actions: (HeroSlide) -> Actions
 
     @State private var index = 0
@@ -52,11 +55,11 @@ struct BillboardCarousel<Actions: View>: View {
         if !slides.isEmpty {
             let s = slides[min(index, slides.count - 1)]
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
-                Billboard(content: s.content, height: height) {
+                Billboard(content: s.content, height: heroHeight, contentBottom: textBottom) {
                     actions(s)
                 }
                 .ignoresSafeArea(edges: .top)
-                .padding(.bottom, -90)
+                .padding(.bottom, -overlap)
                 if slides.count > 1 {
                     Shelf(title: rowTitle, items: slides) { slide in
                         let i = slides.firstIndex { $0.id == slide.id } ?? 0
@@ -66,8 +69,10 @@ struct BillboardCarousel<Actions: View>: View {
                                  route: slide.route, kind: slide.kind, tmdb: slide.tmdb, titleID: slide.titleID,
                                  onFocusChange: { f in
                                      rowFocused = f
+                                     if f { onRowFocus?() }
                                      if f, i != index { index = i; tick += 1 }
-                                 })
+                                 },
+                                 cornerIcon: statusIcon(slide))
                     }
                 }
             }
@@ -79,4 +84,23 @@ struct BillboardCarousel<Actions: View>: View {
             }
         }
     }
+
+    /// Downloaded (in the library), asked by me, or something I can ask for.
+    private func statusIcon(_ s: HeroSlide) -> String {
+        if s.inLibrary { return "arrow.down.circle.fill" }
+        if let a = s.ask, a.mine == true, a.state == "asked" || a.state == "approved" { return "checkmark.circle.fill" }
+        return "plus.circle"
+    }
+
+    // Apple TV: the picture fills the whole screen and the Featured row sits over its bottom edge, so the
+    // trailer stays as large as possible. Elsewhere the row starts just under a tall picture.
+    #if os(tvOS)
+    private var heroHeight: CGFloat { slides.count > 1 ? BillboardMetrics.fullScreen : height }
+    private var overlap: CGFloat { slides.count > 1 ? 350 : 90 }
+    private var textBottom: CGFloat { slides.count > 1 ? 390 : 110 }
+    #else
+    private var heroHeight: CGFloat { height }
+    private var overlap: CGFloat { 90 }
+    private var textBottom: CGFloat { 110 }
+    #endif
 }

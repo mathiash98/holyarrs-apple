@@ -30,6 +30,8 @@ struct Billboard<Actions: View>: View {
     var overviewLines = 3
     /// Shown under the buttons (the slider's page dots).
     var footer: AnyView? = nil
+    /// Room under the text and buttons (more when a row of cards sits over the bottom of the picture).
+    var contentBottom: CGFloat = 110
     @ViewBuilder var actions: () -> Actions
 
     /// Trailers play with sound unless "Play previews muted" is on in Settings.
@@ -113,7 +115,7 @@ struct Billboard<Actions: View>: View {
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Metrics.gutter)
-            .padding(.bottom, 110)
+            .padding(.bottom, contentBottom)
 
             if let r = content.rating, !r.isEmpty {
                 HStack(spacing: 0) {
@@ -124,7 +126,7 @@ struct Billboard<Actions: View>: View {
                 .background(.black.opacity(0.35))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                .padding(.bottom, 130)
+                .padding(.bottom, contentBottom + 20)
             }
         }
         .frame(height: height)

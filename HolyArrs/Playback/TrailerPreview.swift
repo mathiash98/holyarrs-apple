@@ -182,15 +182,20 @@ nonisolated struct Letterbox: Sendable, Equatable {
         let gen = AVAssetImageGenerator(asset: asset)
         gen.appliesPreferredTrackTransform = true
         gen.maximumSize = CGSize(width: 192, height: 192)
+        let duration = (try? await asset.load(.duration).seconds) ?? 90
         var bars: [CGFloat] = []
-        // Several frames, so one dark scene does not look like a bar; the smallest bar wins.
-        for t in [6.0, 14.0, 24.0] {
+        // Five frames spread over the trailer: studio logos at the start are often full frame and a dark scene
+        // can look like a bar, so the median counts. All-black frames are skipped.
+        for f in [0.15, 0.3, 0.45, 0.6, 0.75] {
+            let t = max(2, (duration.isFinite ? duration : 90) * f)
             if let (img, _) = try? await gen.image(at: CMTime(seconds: t, preferredTimescale: 600)) {
-                bars.append(barFraction(img))
+                let b = barFraction(img)
+                if b < 0.3 { bars.append(b) }
             }
         }
-        guard let bar = bars.min() else { return nil }
-        return Letterbox(size: size, bar: bar)
+        guard !bars.isEmpty else { return nil }
+        let sorted = bars.sorted()
+        return Letterbox(size: size, bar: sorted[sorted.count / 2])
     }
 
     /// The share of rows at the top and bottom that are (nearly) black; the smaller side counts.

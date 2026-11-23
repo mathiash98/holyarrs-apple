@@ -320,6 +320,8 @@ struct TileCard: View {
     var width: CGFloat = Metrics.wideWidth
     /// Called when the tile gains or loses focus (Apple TV) or the pointer (iPad, Mac).
     var onFocusChange: ((Bool) -> Void)? = nil
+    /// A small status symbol in the bottom-right corner (downloaded, asked, can ask).
+    var cornerIcon: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -370,6 +372,14 @@ struct TileCard: View {
                 Spacer()
             }
             .padding(10)
+            if let cornerIcon {
+                Image(systemName: cornerIcon)
+                    .font(.xHeadline)
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.8), radius: 6)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(12)
+            }
             if let progress {
                 GeometryReader { g in
                     Rectangle().fill(.white.opacity(0.25))

@@ -18,13 +18,15 @@ struct ExploreView: View {
     @State private var loadingTail = false
     @State private var browse: BrowseAnswer?
     @State private var sectionTiles: [String: [BrowseTile]] = [:]
+    @State private var page = ScrollPosition(edge: .top)
 
     var body: some View {
-        PageScrollView {
+        PageScrollView(position: $page) {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                 if let hero = head.value?.hero, !hero.isEmpty {
                     // The billboard follows the Featured row: focus a tile and its trailer plays up top.
-                    BillboardCarousel(slides: hero.filter { !HeroSlide.looksLikeSpam($0.displayName) }.map { HeroSlide(item: $0) }) { s in
+                    BillboardCarousel(slides: hero.filter { !HeroSlide.looksLikeSpam($0.displayName) }.map { HeroSlide(item: $0) },
+                                      onRowFocus: { withAnimation(.smooth) { page.scrollTo(edge: .top) } }) { s in
                         if s.inLibrary {
                             LibraryPlayButton(kind: s.kind, tmdb: s.tmdb, titleID: s.titleID)
                         } else {
