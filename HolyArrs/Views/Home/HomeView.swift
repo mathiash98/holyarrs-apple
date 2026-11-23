@@ -6,8 +6,8 @@ struct HomeView: View {
 
     struct Data {
         var home: HomeAnswer
-        var featured: HomeCard?
-        var featuredTitle: LibraryTitle?
+        /// The top slider: titles in the library mixed with new recommendations from Explore.
+        var slides: [HeroSlide]
         var waiting: [Ask]
         var mine: [Ask]
         var trending: DiscoverAnswer?
@@ -82,23 +82,14 @@ struct HomeView: View {
 
     @ViewBuilder
     private func billboard(_ d: Data) -> some View {
-        if let f = d.featured {
-            let key = app.tmdbKey(titleID: f.title_id)
-            let t = d.featuredTitle
-            Billboard(content: BillboardContent(
-                kind: f.kind, tmdb: key?.tmdb ?? t?.ids?.tmdb?.value, titleID: f.title_id, name: f.name ?? "",
-                logo: f.logo ?? t?.logo, backdrop: f.backdrop ?? t?.backdrop,
-                headline: f.line,
-                rating: t?.rating,
-                meta: [f.year.map(String.init), Fmt.runtime(t?.runtime_minutes), (t?.genres?.names ?? []).prefix(2).joined(separator: " · ")]
-                    .compactMap { $0 }.filter { !$0.isEmpty },
-                overview: t?.overview, route: f.route)) {
-                LibraryPlayButton(kind: f.kind, tmdb: key?.tmdb ?? t?.ids?.tmdb?.value, titleID: f.title_id)
-                TrailerButton(kind: f.kind, tmdb: key?.tmdb ?? t?.ids?.tmdb?.value, name: f.name ?? "")
-                if let r = f.route {
-                    NavigationLink(value: r) { Label("More info", systemImage: "info.circle") }
-                        .secondaryAction()
-                }
+        BillboardCarousel(slides: d.slides) { s in
+            if s.inLibrary {
+                LibraryPlayButton(kind: s.kind, tmdb: s.tmdb, titleID: s.titleID)
+            }
+            TrailerButton(kind: s.kind, tmdb: s.tmdb, name: s.name)
+            if let r = s.route {
+                NavigationLink(value: r) { Label("More info", systemImage: "info.circle") }
+                    .secondaryAction()
             }
         }
     }
@@ -156,24 +147,70 @@ struct HomeView: View {
             async let mine: AsksAnswer? = try? c.get("/asks?mine=1&limit=20")
             async let trending: DiscoverAnswer? = try? c.get("/discover?row=trending")
             async let messages: MessagesAnswer? = try? c.get("/messages?limit=20")
+            async let explore: ExploreHead? = try? c.get("/explore/head?type=all&tz=\(TimeZone.current.identifier.q)")
             var waiting: [Ask] = []
             if app.me?.can("approve") == true {
                 waiting = (try? await c.get("/asks?state=asked&limit=30", as: AsksAnswer.self))?.asks ?? []
             }
             let h = try await home
-            // Feature a recent arrival that has art and a logo; a different one on each visit.
-            let candidates = (h.arrived ?? []).prefix(8).filter { $0.backdrop != nil && $0.logo != nil }
-            let featured = candidates.randomElement() ?? h.arrived?.first ?? h.soon?.first
-            var featuredTitle: LibraryTitle?
-            if let id = featured?.title_id { featuredTitle = try? await c.get("/titles/\(id)") }
+            let slides = await heroSlides(home: h, explore: await explore, client: c)
             let m = await mine
-            state = .loaded(Data(home: h, featured: featured, featuredTitle: featuredTitle, waiting: waiting,
+            state = .loaded(Data(home: h, slides: slides, waiting: waiting,
                                  mine: (m?.asks ?? []).filter { $0.state != "available" },
                                  trending: await trending, messages: await messages))
         } catch is CancellationError {
         } catch {
             if state.value == nil { state = .failed(error.localizedDescription) }
         }
+    }
+
+    /// Up to four recent arrivals (with art and a logo, shuffled each visit) alternating with up to four
+    /// recommendations from Explore that are not in the library yet.
+    private func heroSlides(home h: HomeAnswer, explore: ExploreHead?, client c: APIClient) async -> [HeroSlide] {
+        var picks = Array((h.arrived ?? []).prefix(12).filter { $0.backdrop != nil && $0.logo != nil }.shuffled().prefix(4))
+        if picks.isEmpty, let f = h.arrived?.first ?? h.soon?.first { picks = [f] }
+        var titles: [Int: LibraryTitle] = [:]
+        await withTaskGroup(of: (Int, LibraryTitle?).self) { g in
+            for p in picks { if let id = p.title_id { g.addTask { (id, try? await c.get("/titles/\(id)", as: LibraryTitle.self)) } } }
+            for await (id, t) in g { if let t { titles[id] = t } }
+        }
+        let library: [HeroSlide] = picks.map { f in
+            let t = f.title_id.flatMap { titles[$0] }
+            let tmdb = app.tmdbKey(titleID: f.title_id)?.tmdb ?? t?.ids?.tmdb?.value
+            return HeroSlide(id: "lib:\(f.id)", content: BillboardContent(
+                kind: f.kind, tmdb: tmdb, titleID: f.title_id, name: f.name ?? "",
+                logo: f.logo ?? t?.logo, backdrop: f.backdrop ?? t?.backdrop,
+                headline: f.line, rating: t?.rating,
+                meta: [f.year.map(String.init), Fmt.runtime(t?.runtime_minutes), (t?.genres?.names ?? []).prefix(2).joined(separator: " · ")]
+                    .compactMap { $0 }.filter { !$0.isEmpty },
+                overview: t?.overview, route: f.route),
+                inLibrary: true, kind: f.kind, tmdb: tmdb, titleID: f.title_id, name: f.name ?? "", route: f.route)
+        }
+        let fresh: [HeroSlide] = (explore?.hero ?? [])
+            .filter { $0.in_library != true && $0.title_id == nil && $0.card_logo != nil && ($0.backdrop ?? $0.card_art) != nil }
+            .filter { !Self.looksLikeSpam($0.displayName) }
+            .prefix(4)
+            .map { m in
+                HeroSlide(id: "new:\(m.id)", content: BillboardContent(
+                    kind: m.kind, tmdb: m.tmdbID, titleID: nil, name: m.displayName,
+                    logo: m.card_logo, backdrop: m.backdrop ?? m.card_art,
+                    headline: "Not in your library yet",
+                    meta: [m.year.map(String.init), m.kind == "show" ? "Series" : "Movie", m.fresh?.text].compactMap { $0 },
+                    overview: m.overview, route: m.route),
+                    inLibrary: false, kind: m.kind, tmdb: m.tmdbID, titleID: nil, name: m.displayName, route: m.route)
+            }
+        // Alternate: library, new, library, new…
+        var out: [HeroSlide] = []
+        for i in 0 ..< max(library.count, fresh.count) {
+            if i < library.count { out.append(library[i]) }
+            if i < fresh.count { out.append(fresh[i]) }
+        }
+        return out
+    }
+
+    /// TMDB has junk entries such as "Ticket+1-888-…" phone-number titles.
+    private static func looksLikeSpam(_ name: String) -> Bool {
+        name.filter(\.isNumber).count >= 7 || name.contains("+1-") || name.lowercased().contains("call ")
     }
 
     private func loadJellyfin() async {

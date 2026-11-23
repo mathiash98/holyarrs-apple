@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		08841667598F6DBBDD4E0C0A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8E66823BD85ACA9888BF549 /* Assets.xcassets */; };
+		0F6A2BD028270AF30580E380 /* BillboardCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537EDF77AD4580EDA1B699E9 /* BillboardCarousel.swift */; };
 		12F65C9D9799652D8D080C22 /* Titles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65737C5DBF215AE3BB2FA6D3 /* Titles.swift */; };
 		27C9A3B8680DC41D80D80012 /* AppFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A97506D9A341348DB370D0 /* AppFonts.swift */; };
 		2933E2D2752A1A102B0BD141 /* OfflineControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42160F8D20C476B0FB7A3F25 /* OfflineControls.swift */; };
@@ -68,6 +69,7 @@
 		47CA3365047BD235D94EB72B /* Media.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Media.swift; sourceTree = "<group>"; };
 		4FB80FA8B99A489B5F89DF70 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		51D16F6CB678874AAE0A3AA1 /* RequestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestsView.swift; sourceTree = "<group>"; };
+		537EDF77AD4580EDA1B699E9 /* BillboardCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillboardCarousel.swift; sourceTree = "<group>"; };
 		539AF0C42B563F526A3DCCE4 /* Billboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Billboard.swift; sourceTree = "<group>"; };
 		5790D58C5E92E2B0E8B38B9A /* HolyArrsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HolyArrsApp.swift; sourceTree = "<group>"; };
 		5AF98A0E33671D92A40B0D2F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 				0B488BE27AC7E9E4E90FC5E5 /* Ambient.swift */,
 				33A97506D9A341348DB370D0 /* AppFonts.swift */,
 				539AF0C42B563F526A3DCCE4 /* Billboard.swift */,
+				537EDF77AD4580EDA1B699E9 /* BillboardCarousel.swift */,
 				7C198E17F04A8DCB61F7DAA3 /* Cards.swift */,
 				FF9B2A00B3BD35D6B2B42F05 /* LibraryPlayButton.swift */,
 				7B391D0006C644355591318F /* Loadable.swift */,
@@ -409,6 +412,7 @@
 				A2CC343E51ADF7E7DA64B2E1 /* AppModel.swift in Sources */,
 				A59A9A048829194CC7B2761E /* AskSheet.swift in Sources */,
 				D960A96C8B32D529AC4D4EB0 /* Billboard.swift in Sources */,
+				0F6A2BD028270AF30580E380 /* BillboardCarousel.swift in Sources */,
 				A932B93A4D1FC2A39D982138 /* CalendarView.swift in Sources */,
 				524C0050CB1DE45A7A538FD8 /* Cards.swift in Sources */,
 				A41F74E80B40CDC6C85D6E36 /* Common.swift in Sources */,

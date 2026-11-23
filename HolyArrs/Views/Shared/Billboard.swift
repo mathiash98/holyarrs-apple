@@ -28,6 +28,8 @@ struct Billboard<Actions: View>: View {
     let content: BillboardContent
     var height: CGFloat = BillboardMetrics.height
     var overviewLines = 3
+    /// Shown under the buttons (the slider's page dots).
+    var footer: AnyView? = nil
     @ViewBuilder var actions: () -> Actions
 
     /// Trailers play with sound unless "Play previews muted" is on in Settings.
@@ -38,6 +40,8 @@ struct Billboard<Actions: View>: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             RemoteImage(path: content.backdrop)
+                .id(content.backdrop)
+                .transition(.opacity.animation(.easeInOut(duration: 0.6)))
                 .scaleEffect(zoom ? 1.08 : 1.0)
                 .animation(.easeInOut(duration: 24).repeatForever(autoreverses: true), value: zoom)
                 .onAppear { zoom = true }
@@ -105,6 +109,7 @@ struct Billboard<Actions: View>: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .focusSection()
                 #endif
+                if let footer { footer }
             }
             .foregroundStyle(.white)
             .padding(.horizontal, Metrics.gutter)
