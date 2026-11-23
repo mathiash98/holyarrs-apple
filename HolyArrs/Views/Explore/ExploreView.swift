@@ -22,22 +22,19 @@ struct ExploreView: View {
     var body: some View {
         PageScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
-                if let first = head.value?.hero?.first {
-                    Billboard(content: BillboardContent(kind: first.kind, tmdb: first.tmdbID, titleID: first.title_id, name: first.displayName,
-                                                        logo: first.card_logo, backdrop: first.backdrop ?? first.card_art,
-                                                        meta: [first.year.map(String.init), first.kind == "show" ? "Series" : "Movie", first.fresh?.text].compactMap { $0 },
-                                                        overview: first.overview, route: first.route)) {
-                        if first.in_library == true || first.title_id != nil {
-                            LibraryPlayButton(kind: first.kind, tmdb: first.tmdbID, titleID: first.title_id)
+                if let hero = head.value?.hero, !hero.isEmpty {
+                    // The billboard follows the Featured row: focus a tile and its trailer plays up top.
+                    BillboardCarousel(slides: hero.filter { !HeroSlide.looksLikeSpam($0.displayName) }.map { HeroSlide(item: $0) }) { s in
+                        if s.inLibrary {
+                            LibraryPlayButton(kind: s.kind, tmdb: s.tmdb, titleID: s.titleID)
                         }
-                        TrailerButton(kind: first.kind, tmdb: first.tmdbID, name: first.displayName)
-                        if let r = first.route {
+                        TrailerButton(kind: s.kind, tmdb: s.tmdb, name: s.name)
+                        if let r = s.route {
                             NavigationLink(value: r) { Label("More info", systemImage: "info.circle") }
                                 .secondaryAction()
                         }
                     }
-                    .ignoresSafeArea(edges: .top)
-                    .padding(.bottom, -90)
+                    .id(kind)
                 }
                 HStack(spacing: 20) {
                     Picker("Type", selection: $kind) {
@@ -59,7 +56,6 @@ struct ExploreView: View {
                 case let .failed(m):
                     ErrorView(message: m) { await loadHead() }.frame(minHeight: 300)
                 case let .loaded(h):
-                    if let hero = h.hero, hero.count > 1 { MediaShelf(title: "Featured", items: Array(hero.dropFirst())) }
                     ForEach(h.head ?? []) { row in
                         if let items = row.items, !items.isEmpty {
                             MediaShelf(title: row.title ?? "", subtitle: row.subtitle, items: items)
@@ -83,7 +79,10 @@ struct ExploreView: View {
                     .disabled(loadingTail)
                 }
             }
-            .padding(.vertical, 20)
+            .padding(.bottom, 20)
+            #if !os(tvOS)
+            .padding(.top, 20)
+            #endif
         }
         #if os(tvOS)
         .ignoresSafeArea(edges: .top)

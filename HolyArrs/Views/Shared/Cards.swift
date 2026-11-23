@@ -318,6 +318,8 @@ struct TileCard: View {
     var titleID: Int? = nil
     var ambient: String? = nil
     var width: CGFloat = Metrics.wideWidth
+    /// Called when the tile gains or loses focus (Apple TV) or the pointer (iPad, Mac).
+    var onFocusChange: ((Bool) -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -331,6 +333,7 @@ struct TileCard: View {
             }
             .cardButton()
             .ambientOnFocus(ambient ?? art)
+            .modifier(FocusReport(action: onFocusChange))
             if let line, !line.isEmpty {
                 Text(line).font(.xCaption).foregroundStyle(.secondary).lineLimit(1).frame(width: width, alignment: .leading)
             }

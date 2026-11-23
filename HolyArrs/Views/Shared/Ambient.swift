@@ -42,3 +42,23 @@ private struct AmbientFocus: ViewModifier {
         #endif
     }
 }
+
+/// Tells the caller when a card gains or loses focus (Apple TV) or the pointer (iPad, Mac).
+struct FocusReport: ViewModifier {
+    let action: ((Bool) -> Void)?
+    @FocusState private var focused: Bool
+
+    func body(content: Content) -> some View {
+        if let action {
+            #if os(tvOS)
+            content
+                .focused($focused)
+                .onChange(of: focused) { _, f in action(f) }
+            #else
+            content.onHover { action($0) }
+            #endif
+        } else {
+            content
+        }
+    }
+}

@@ -24,8 +24,6 @@ struct HomeView: View {
             PageScrollView {
                 VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
                     billboard(d)
-                        .ignoresSafeArea(edges: .top)
-                        .padding(.bottom, -90)
                     ActionErrorBanner(message: $actionError)
                     if let j = app.jellyfinClient {
                         jellyfinRow("Continue Watching", resume, client: j)
@@ -188,17 +186,9 @@ struct HomeView: View {
         }
         let fresh: [HeroSlide] = (explore?.hero ?? [])
             .filter { $0.in_library != true && $0.title_id == nil && $0.card_logo != nil && ($0.backdrop ?? $0.card_art) != nil }
-            .filter { !Self.looksLikeSpam($0.displayName) }
+            .filter { !HeroSlide.looksLikeSpam($0.displayName) }
             .prefix(4)
-            .map { m in
-                HeroSlide(id: "new:\(m.id)", content: BillboardContent(
-                    kind: m.kind, tmdb: m.tmdbID, titleID: nil, name: m.displayName,
-                    logo: m.card_logo, backdrop: m.backdrop ?? m.card_art,
-                    headline: "Not in your library yet",
-                    meta: [m.year.map(String.init), m.kind == "show" ? "Series" : "Movie", m.fresh?.text].compactMap { $0 },
-                    overview: m.overview, route: m.route),
-                    inLibrary: false, kind: m.kind, tmdb: m.tmdbID, titleID: nil, name: m.displayName, route: m.route)
-            }
+            .map { HeroSlide(item: $0) }
         // Alternate: library, new, library, new…
         var out: [HeroSlide] = []
         for i in 0 ..< max(library.count, fresh.count) {
@@ -206,11 +196,6 @@ struct HomeView: View {
             if i < fresh.count { out.append(fresh[i]) }
         }
         return out
-    }
-
-    /// TMDB has junk entries such as "Ticket+1-888-…" phone-number titles.
-    private static func looksLikeSpam(_ name: String) -> Bool {
-        name.filter(\.isNumber).count >= 7 || name.contains("+1-") || name.lowercased().contains("call ")
     }
 
     private func loadJellyfin() async {

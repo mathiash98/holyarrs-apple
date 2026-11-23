@@ -13,77 +13,68 @@ struct HeroSlide: Identifiable {
     var route: Route?
 }
 
-/// The top billboard as a slider: it moves to the next title every 25 seconds, and the page dots under the
-/// buttons pick a title (on Apple TV moving focus along the dots changes the page). The billboard keeps its
-/// identity while pages change, so focus stays where it is.
+extension HeroSlide {
+    /// TMDB has junk entries such as "Ticket+1-888-…" phone-number titles.
+    static func looksLikeSpam(_ name: String) -> Bool {
+        name.filter(\.isNumber).count >= 7 || name.contains("+1-") || name.lowercased().contains("call ")
+    }
+
+    /// A slide for an Explore / Discover item: in the library or a new recommendation.
+    init(item m: MediaItem, headline: String? = nil) {
+        let have = m.in_library == true || m.title_id != nil
+        self.init(id: "item:\(m.id)", content: BillboardContent(
+            kind: m.kind, tmdb: m.tmdbID, titleID: m.title_id, name: m.displayName,
+            logo: m.card_logo, backdrop: m.backdrop ?? m.card_art,
+            headline: headline ?? (have ? nil : "Not in your library yet"),
+            meta: [m.year.map(String.init), m.kind == "show" ? "Series" : "Movie", m.fresh?.text].compactMap { $0 },
+            overview: m.overview, route: m.route),
+            inLibrary: have, kind: m.kind, tmdb: m.tmdbID, titleID: m.title_id, name: m.displayName, route: m.route)
+    }
+}
+
+/// The top billboard with its "Featured" row right under it, like Netflix: moving focus along the row
+/// switches the billboard to that title and starts its trailer; clicking a tile opens the title. When the row
+/// does not have focus, the billboard moves on to the next title every 25 seconds.
 struct BillboardCarousel<Actions: View>: View {
     let slides: [HeroSlide]
     var height: CGFloat = BillboardMetrics.height
+    var rowTitle = "Featured"
     @ViewBuilder var actions: (HeroSlide) -> Actions
 
     @State private var index = 0
     /// Bumped by a manual change, so the auto-advance timer starts over.
     @State private var tick = 0
-    @FocusState private var focusedDot: Int?
+    @State private var rowFocused = false
 
     var body: some View {
         if !slides.isEmpty {
             let s = slides[min(index, slides.count - 1)]
-            Billboard(content: s.content, height: height, footer: slides.count > 1 ? AnyView(dots) : nil) {
-                actions(s)
+            VStack(alignment: .leading, spacing: Metrics.rowSpacing) {
+                Billboard(content: s.content, height: height) {
+                    actions(s)
+                }
+                .ignoresSafeArea(edges: .top)
+                .padding(.bottom, -90)
+                if slides.count > 1 {
+                    Shelf(title: rowTitle, items: slides) { slide in
+                        let i = slides.firstIndex { $0.id == slide.id } ?? 0
+                        TileCard(title: slide.name, line: slide.content.headline ?? slide.content.meta.first,
+                                 art: slide.content.backdrop, logo: slide.content.logo,
+                                 badge: i == index ? "Now showing" : nil,
+                                 route: slide.route, kind: slide.kind, tmdb: slide.tmdb, titleID: slide.titleID,
+                                 onFocusChange: { f in
+                                     rowFocused = f
+                                     if f, i != index { index = i; tick += 1 }
+                                 })
+                    }
+                }
             }
             .task(id: "\(index)/\(tick)/\(slides.count)") {
                 guard slides.count > 1 else { return }
                 try? await Task.sleep(for: .seconds(25))
-                guard !Task.isCancelled, focusedDot == nil else { return }
+                guard !Task.isCancelled, !rowFocused else { return }
                 index = (index + 1) % slides.count
             }
-            .onChange(of: focusedDot) { _, d in
-                if let d, d != index { index = d; tick += 1 }
-            }
         }
-    }
-
-    private var dots: some View {
-        HStack(spacing: 10) {
-            ForEach(slides.indices, id: \.self) { i in
-                Button {
-                    index = i
-                    tick += 1
-                } label: {
-                    PageDot(selected: i == index)
-                }
-                .buttonStyle(PageDotStyle())
-                .focused($focusedDot, equals: i)
-                .accessibilityLabel("\(slides[i].name), \(i + 1) of \(slides.count)")
-            }
-        }
-        .padding(.vertical, 6)
-        #if os(tvOS)
-        .focusSection()
-        #endif
-    }
-}
-
-private struct PageDot: View {
-    let selected: Bool
-    @Environment(\.isFocused) private var focused
-
-    var body: some View {
-        Capsule()
-            .fill(.white.opacity(selected || focused ? 1 : 0.4))
-            .frame(width: selected ? 34 : 10, height: 10)
-            .scaleEffect(focused ? 1.35 : 1)
-            .padding(6)
-            .contentShape(Rectangle())
-            .animation(.easeOut(duration: 0.2), value: selected)
-            .animation(.easeOut(duration: 0.15), value: focused)
-    }
-}
-
-/// No platter: the dot draws its own focus look.
-private struct PageDotStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label.opacity(configuration.isPressed ? 0.7 : 1)
     }
 }
